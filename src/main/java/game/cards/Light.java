@@ -1,4 +1,4 @@
-package cards;
+package game.cards;
 
 public class Light extends Spell {
     @Override

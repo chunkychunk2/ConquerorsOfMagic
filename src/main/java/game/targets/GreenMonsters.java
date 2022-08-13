@@ -1,4 +1,4 @@
-package targets;
+package game.targets;
 
 public class GreenMonsters extends Target {
 
@@ -10,12 +10,16 @@ public class GreenMonsters extends Target {
         if ("Magical".equals(damageType)) {
             setdType(DamageType.MAGICAL);
         } else setdType(DamageType.PHYSICAL);
+
         if ("Undead".equals(monsterType)) {
             setmType(MonsterTypes.UNDEAD);
         } else setmType(MonsterTypes.OTHERS);
-        if ("FIERY".equals(elementType)) {
+
+        if ("Fiery".equals(elementType)) {
             seteType(ElementType.FIERY);
-        } else seteType(ElementType.FROSTY);
+        } else if  ("Frosty".equals(elementType)){
+            seteType(ElementType.FROSTY);
+        } else seteType(ElementType.COMMON);
         setName(name);
     }
 

@@ -1,4 +1,4 @@
-package targets;
+package game.targets;
 
 public class Pyromancer extends Target {
 

@@ -1,4 +1,4 @@
-package cards;
+package game.cards;
 
 public class FireBall extends Spell {
     @Override
