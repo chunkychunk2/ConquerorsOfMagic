@@ -47,16 +47,25 @@ public class Hand {
         for (int i = 0; i < spells.size(); i++) System.out.println("[" + i + "] " + spells.get(i));
     }
 
+    /**
+     * Метод восстнавливает карту из сброса по индексу
+     */
     public Spell getSpellFromDiscard(int i){
         Spell spell = discard.get(i);
         discard.remove(i);
         return spell;
     }
 
+    /**
+     * Метод отправляет карту в сброс
+     */
     public void addSpellToDiscard(Spell spell){
         discard.add(spell);
     }
 
+    /**
+     * Геттер сброса
+     */
     public List<Spell> getDiscard(){
         return discard;
     }
