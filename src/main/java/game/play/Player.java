@@ -27,6 +27,12 @@ public class Player {
      */
     private int selectedTarget;
 
+    private List<Integer> selectedTargets;
+
+    public List<Integer> getSelectedTargets() {
+        return selectedTargets;
+    }
+
     /**
      * Имя персонажа игрока
      */
@@ -37,10 +43,11 @@ public class Player {
      *
      * @param tagret
      */
-    Player(Target tagret) {
+    public Player(Target tagret) {
         this.target = tagret;
         this.hand = new Hand();
         this.name = tagret.getName();
+        selectedTargets = new ArrayList<>();
     }
 
     /**
@@ -85,11 +92,13 @@ public class Player {
      * @throws IOException
      * @see #hand - рука
      */
-    public int spellCreation() throws IOException {
+    public int spellCreation(int choice) throws IOException {
         System.out.println(this + " выбирает заклинание");
         System.out.println("Выберите заклинание: ");
         this.getHand().checkSpells();
-        return Integer.parseInt(reader.readLine());
+        int spellChoice = choice;
+        if (choice == -1) spellChoice = Integer.parseInt(reader.readLine());
+        return spellChoice;
     }
 
     /**
@@ -123,12 +132,14 @@ public class Player {
      * @see Game#field - игровое поле
      * @see #selectedTarget - индекс выбранной цели
      */
-    public int targetSelection(List<Target> field) throws IOException {
+    public int targetSelection(List<Target> field, int choice) throws IOException {
         System.out.println("Выберите цель:");
         for (int i = 0; i < field.size(); i++) {
             System.out.println("[" + i + "] " + field.get(i));
         }
-        selectedTarget = Integer.parseInt(reader.readLine());
+        selectedTarget = choice;
+        if (choice == -1) selectedTarget = Integer.parseInt(reader.readLine());
+        selectedTargets.add(selectedTarget);
         return selectedTarget;
     }
 
@@ -140,10 +151,11 @@ public class Player {
      * @return направление заклинания
      * @throws IOException
      */
-    public boolean directionSelection() throws IOException {
+    public boolean directionSelection(String choice) throws IOException {
         System.out.println("Выберите направление: [На цель]/[На себя]");
         boolean direction = false;
-        String directionChoice = reader.readLine();
+        String directionChoice = choice;
+        if (choice.equals("s")) directionChoice = reader.readLine();
         if (directionChoice.equals("На цель")) direction = true;
         return direction;
     }
@@ -160,13 +172,14 @@ public class Player {
      * @return решение о размещение картты в новом месте
      * @throws IOException
      */
-    public boolean cardLocation(List<Target> field, int i) throws IOException {
+    public boolean cardLocation(List<Target> field, int i, String choice) throws IOException {
         boolean newCardPlace = false;
         if (field.get(selectedTarget).getActiveCards().containsKey(this)) {
             // if (i == 2 && !field.get(selectedTarget).getActiveCards().get(this).get(0).isEmpty()) {
             if (i == 2 && field.get(selectedTarget).getActiveCards().get(this).get(0).size() == 1) {
                 System.out.println("Разместить заклинание поверх своей ранее неразыгранной карты или в другое место? [Да]/[Нет]");
-                String cardLocationChoice = reader.readLine();
+                String cardLocationChoice = choice;
+                if (choice.equals("s")) cardLocationChoice = reader.readLine();
                 if (cardLocationChoice.equals("Нет")) newCardPlace = true;
             }
         }
@@ -180,11 +193,14 @@ public class Player {
      * @return решение о розыгрыше карт
      * @throws IOException
      */
-    public boolean drawDecision() throws IOException {
+    public boolean drawDecision(String choice) throws IOException {
         System.out.println(this + " делает выбор о розыгрыше");
         System.out.println("Разыграть заклинание? [Да]/[Нет]");
-        String decision = reader.readLine();
-        return decision.equals("Да");
+        String decision = choice;
+        boolean result = true;
+        if (choice.equals("s")) decision = reader.readLine();
+        if (decision.equals("Нет")) result = false;
+        return result;
     }
 
     /**
@@ -200,23 +216,27 @@ public class Player {
         int decision = this.getSelectedTarget();
         int spellNumber = 0;
         List<Integer> targets = new ArrayList<>();
-        for (int i = 0; i < field.size(); i++) {
-            if (field.get(i).getActiveCards().containsKey(this)) {
-                if (field.get(selectedTarget).getActiveCards().get(this).get(0).size() == 1) targets.add(i);
+        for (int i = 0; i < selectedTargets.size(); i++) {
+            if (field.get(selectedTargets.get(i)).getActiveCards().containsKey(this)) {
+                if (field.get(selectedTargets.get(i)).getActiveCards().get(this).get(0).size() == 1) targets.add(i);
             }
         }
         // если заклинания находятся на разных целях
-        if (targets.size() == 2) {
-            System.out.println("Какое заклинание разыграть?");
-            System.out.println("Заклинание напротив [1] " + field.get(targets.get(0)) + " или напротив [2] " + field.get(targets.get(1)));
-            decision = Integer.parseInt(reader.readLine());
-            if (decision == 2) decision = field.indexOf(field.get(targets.get(1)));
-            else decision = field.indexOf(field.get(targets.get(0)));
-        }
+
+            if (targets.size() == 2) {
+                if (!selectedTargets.get(0).equals(selectedTargets.get(1))) {
+                    System.out.println("Какое заклинание разыграть?");
+                    System.out.println("Заклинание напротив [1] " + field.get(selectedTargets.get(0)) + " или напротив [2] " + field.get(selectedTargets.get(1)));
+                    decision = Integer.parseInt(reader.readLine());
+                }
+                if (decision == 2) decision = field.indexOf(field.get(selectedTargets.get(1)));
+                else decision = field.indexOf(field.get(selectedTargets.get(0)));
+            }
+
         // если заклинания находится на одной цели
         if (field.get(decision).getActiveCards().containsKey(this)) {
             if (field.get(decision).getActiveCards().get(this).size() == 2) {
-                System.out.println("Какое заклинание разыграть?");
+                System.out.println("Какое заклинание разыграть??");
                 System.out.println("[1] " + field.get(decision).getActiveCards().get(this).get(0).getLast() +
                         " или [2] " + field.get(decision).getActiveCards().get(this).get(1).getLast());
                 spellNumber = Integer.parseInt(reader.readLine());
@@ -236,6 +256,12 @@ public class Player {
                 field.get(decision).getSpellEffect(entry.getKey(), this.getTarget().getLinePosition(), field, spellLevel);
 
         }
+        int index = 0;
+        for (int i = 0; i < this.selectedTargets.size(); i++) {
+            if (this.selectedTargets.get(i) == this.selectedTarget) index = i;
+        }
+        System.out.println(index);
+        this.getSelectedTargets().remove(index);
         field.get(decision).getActiveCards().get(this).get(spellNumber).pollLast();
     }
 

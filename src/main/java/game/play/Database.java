@@ -25,7 +25,8 @@ public class Database {
         Class.forName("com.mysql.cj.jdbc.Driver");
         try (Connection connection = DriverManager.getConnection(connectionURL, root, password);
              Statement statement = connection.createStatement()) {
-            statement.execute("INSERT INTO game SELECT * FROM green_monsters ORDER BY rand()");
+          //  statement.execute("INSERT INTO game SELECT * FROM green_monsters ORDER BY rand()");
+            statement.execute("INSERT INTO game SELECT * FROM green_monsters");
             ResultSet resultSet = statement.executeQuery("SELECT * FROM game");
             while (resultSet.next()) {
                 Target monster = new GreenMonsters(resultSet.getInt(2), resultSet.getInt(3),

@@ -220,27 +220,27 @@ public class Game {
             // p1.placeSpell(p1.spellCreation(), field.get(p1.targetSelection(field)),p1.directionSelection(),p1.cardLocation(field,1));
             if (!player.getTarget().getActiveMarkers().isEmpty()) {
                 if (!player.getTarget().getActiveMarkers().getLast().equals(Marker.FREEZEMARKER))
-                    player.placeSpell(player.spellCreation(), field.get(player.targetSelection(field)), player.directionSelection(), player.cardLocation(field, 1));
+                    player.placeSpell(player.spellCreation(-1), field.get(player.targetSelection(field,-1)), player.directionSelection("s"), player.cardLocation(field, 1,"s"));
                 else {
                     player.discardAll(field);
                     System.out.println(player + " заморожен и пропускает ход!");
                 }
             } else
-                player.placeSpell(player.spellCreation(), field.get(player.targetSelection(field)), player.directionSelection(), player.cardLocation(field, 1));
+                player.placeSpell(player.spellCreation(-1), field.get(player.targetSelection(field,-1)), player.directionSelection("s"), player.cardLocation(field, 1,"s"));
         }
 
         // Решение о розыгрыше карт
         for (Player player : players) {
             if (!player.getTarget().getActiveMarkers().isEmpty()) {
                 if (!player.getTarget().getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
-                    if (player.drawDecision()) player.drawSpell(field);
+                    if (player.drawDecision("s")) player.drawSpell(field);
                 } else {
                     player.discardAll(field);
                     System.out.println(player + " заморожен и пропускает ход!");
                 }
 
             } else {
-                if (player.drawDecision()) player.drawSpell(field);
+                if (player.drawDecision("s")) player.drawSpell(field);
             }
         }
 
@@ -261,20 +261,20 @@ public class Game {
         for (Player player : players) {
             if (!player.getTarget().getActiveMarkers().isEmpty()) {
                 if (!player.getTarget().getActiveMarkers().getLast().equals(Marker.FREEZEMARKER))
-                    player.placeSpell(player.spellCreation(), field.get(player.targetSelection(field)), player.directionSelection(), player.cardLocation(field, 2));
+                    player.placeSpell(player.spellCreation(-1), field.get(player.targetSelection(field,-1)), player.directionSelection("s"), player.cardLocation(field, 2,"s"));
                 else {
                     player.discardAll(field);
                     System.out.println(player + " заморожен и пропускает ход!");
                 }
             } else
-                player.placeSpell(player.spellCreation(), field.get(player.targetSelection(field)), player.directionSelection(), player.cardLocation(field, 2));
+                player.placeSpell(player.spellCreation(-1), field.get(player.targetSelection(field,-1)), player.directionSelection("s"), player.cardLocation(field, 2,"s"));
         }
 
         // Решение о розыгрыше карт
         for (Player player : players) {
             if (!player.getTarget().getActiveMarkers().isEmpty()) {
                 if (!player.getTarget().getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
-                    if (player.drawDecision()) player.drawSpell(field);
+                    if (player.drawDecision("s")) player.drawSpell(field);
                 } else {
                     player.discardAll(field);
                     System.out.println(player + " заморожен и пропускает ход!");
@@ -283,7 +283,7 @@ public class Game {
                 for (Target target : field) {
                     if (target.getActiveCards().containsKey(player)) {
                         if (!target.getActiveCards().get(player).get(0).isEmpty()) {
-                            if (player.drawDecision()) player.drawSpell(field);
+                            if (player.drawDecision("s")) player.drawSpell(field);
                             break;
                         }
                     }
