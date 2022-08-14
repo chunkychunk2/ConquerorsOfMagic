@@ -1,5 +1,6 @@
 package game.play;
 
+import game.markers.Marker;
 import game.targets.*;
 
 import java.io.BufferedReader;
@@ -109,16 +110,41 @@ public class Game {
         System.out.print("Атака монстра с рывком: ");
         if (field.get(0).isDash()) {
             System.out.print("Монстр атакует!\n");
+            int positionDamage = 0;
             for (int i = 1; i < field.size(); i++) {
-                field.get(i).getDamage(field.get(0).getDamagePower());
+                if (i == 1) positionDamage = 1;
+                if (i == field.size() - 1) positionDamage = -1;
+                if (!field.get(i).getActiveMarkers().isEmpty()) {
+                    if (field.get(i).getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
+                        field.get(i).getDamage(field.get(0).getDamagePower() - 2 + positionDamage);
+                        field.get(i).removeMarker();
+                    }
+                } else field.get(i).getDamage(field.get(0).getDamagePower() + positionDamage);
             }
         } else System.out.println("Монстр без рывка");
+    }
+
+    public static void monsterAttack() {
+        System.out.print("Атака монстра без рывка: ");
+        if (!field.get(0).isDash()) {
+            System.out.print("Монстр атакует!\n");
+            int positionDamage = 0;
+            for (int i = 1; i < field.size(); i++) {
+                if (i == 1) positionDamage = 1;
+                if (i == field.size() - 1) positionDamage = -1;
+                if (!field.get(i).getActiveMarkers().isEmpty()) {
+                    if (field.get(i).getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
+                        field.get(i).getDamage(field.get(0).getDamagePower() - 2 + positionDamage);
+                        field.get(i).removeMarker();
+                    }
+                } else field.get(i).getDamage(field.get(0).getDamagePower() + positionDamage);
+            }
+        } else System.out.println("Монстр с рывком");
     }
 
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
         generatePlayers();
         createMonsterSlot();
-
 //      Фаза 1: перемещание
         if (turnCount == 0) {
             players.get(0).moveDecision(field);
@@ -146,33 +172,106 @@ public class Game {
         //Фаза 3: атака монстра с рывком
         dashAttack();
         System.out.println(players);
-        for (Player player : players) {
-            // Размещение карты
-            // p1.placeSpell(p1.spellCreation(), field.get(p1.targetSelection(field)),p1.directionSelection(),p1.cardLocation(field,1));
-            player.placeSpell(player.spellCreation(), field.get(player.targetSelection(field)), player.directionSelection(), player.cardLocation(field, 1));
+
+        for (Target target : field) {
+            System.out.println(target + " " + target.getHp());
         }
+
+        // Размещение карты
+        for (Player player : players) {
+            // p1.placeSpell(p1.spellCreation(), field.get(p1.targetSelection(field)),p1.directionSelection(),p1.cardLocation(field,1));
+            if (!player.getTarget().getActiveMarkers().isEmpty()) {
+                if (!player.getTarget().getActiveMarkers().getLast().equals(Marker.FREEZEMARKER))
+                    player.placeSpell(player.spellCreation(), field.get(player.targetSelection(field)), player.directionSelection(), player.cardLocation(field, 1));
+                else {
+                    player.discardAll(field);
+                    System.out.println(player + " заморожен и пропускает ход!");
+                }
+            } else
+                player.placeSpell(player.spellCreation(), field.get(player.targetSelection(field)), player.directionSelection(), player.cardLocation(field, 1));
+
+        }
+
         // Решение о розыгрыше карт
         for (Player player : players) {
-            if (player.drawDecision()) player.drawSpell(field);
+            if (!player.getTarget().getActiveMarkers().isEmpty()) {
+                if (!player.getTarget().getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
+                    if (player.drawDecision()) player.drawSpell(field);
+                } else {
+                    player.discardAll(field);
+                    System.out.println(player + " заморожен и пропускает ход!");
+                }
+
+            } else {
+                if (player.drawDecision()) player.drawSpell(field);
+
+            }
+        }
+
+        for (Target target : field) {
+            System.out.println(target + " " + target.getHp());
         }
 
         // Атака монстра с рывком если жив или не заморожен
         //Фаза 5: вторая атака монстра с рывком
         dashAttack();
 
-        // Размещение карты
-        for (Player player : players) {
-            // Размещение карты
-            // p1.placeSpell(p1.spellCreation(), field.get(p1.targetSelection(field)),p1.directionSelection(),p1.cardLocation(field,1));
-            player.placeSpell(player.spellCreation(), field.get(player.targetSelection(field)), player.directionSelection(), player.cardLocation(field, 2));
-        }
-        // Решение о розыгрыше карт
-        for (Player player : players) {
-            if (player.drawDecision()) player.drawSpell(field);
+
+        for (Target target : field) {
+            System.out.println(target + " " + target.getHp());
         }
 
+        // Размещение карты
+        for (Player player : players) {
+            // p1.placeSpell(p1.spellCreation(), field.get(p1.targetSelection(field)),p1.directionSelection(),p1.cardLocation(field,1));
+            if (!player.getTarget().getActiveMarkers().isEmpty()) {
+                if (!player.getTarget().getActiveMarkers().getLast().equals(Marker.FREEZEMARKER))
+                    player.placeSpell(player.spellCreation(), field.get(player.targetSelection(field)), player.directionSelection(), player.cardLocation(field, 2));
+                else {
+                    player.discardAll(field);
+                    System.out.println(player + " заморожен и пропускает ход!");
+                }
+            } else
+                player.placeSpell(player.spellCreation(), field.get(player.targetSelection(field)), player.directionSelection(), player.cardLocation(field, 2));
+        }
+
+        // Решение о розыгрыше карт
+        for (Player player : players) {
+            if (!player.getTarget().getActiveMarkers().isEmpty()) {
+                if (!player.getTarget().getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
+                    if (player.drawDecision()) player.drawSpell(field);
+                } else {
+                    player.discardAll(field);
+                    System.out.println(player + " заморожен и пропускает ход!");
+                }
+            } else {
+                for (Target target : field) {
+                    if (target.getActiveCards().containsKey(player)) {
+                        //   if (target.getActiveCards().get(player).get(0).size() == 1) {
+                        if (!target.getActiveCards().get(player).get(0).isEmpty()) {
+                            if (player.drawDecision()) player.drawSpell(field);
+                            break;
+                        }
+                    }
+                }
+
+            }
+        }
+
+        for (Target target : field) {
+            System.out.println(target + " " + target.getHp());
+        }
+
+        // сброс размещенных и разыгранных карт
         for (Player player : players) {
             player.discardAll(field);
+        }
+
+        // атака монстра без рывка
+        monsterAttack();
+
+        for (Target target : field) {
+            System.out.println(target + " " + target.getHp());
         }
     }
 }

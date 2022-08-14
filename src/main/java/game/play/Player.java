@@ -1,6 +1,6 @@
 package game.play;
 
-import game.cards.Spell;
+import game.spells.Spell;
 import game.targets.Target;
 
 import java.io.BufferedReader;
@@ -163,7 +163,8 @@ public class Player {
     public boolean cardLocation(List<Target> field, int i) throws IOException {
         boolean newCardPlace = false;
         if (field.get(selectedTarget).getActiveCards().containsKey(this)) {
-            if (i == 2 && field.get(selectedTarget).getActiveCards().get(this).get(0).size() == 1) {
+           // if (i == 2 && !field.get(selectedTarget).getActiveCards().get(this).get(0).isEmpty()) {
+                 if (i == 2 && field.get(selectedTarget).getActiveCards().get(this).get(0).size() == 1) {
                 System.out.println("Разместить заклинание поверх своей ранее неразыгранной карты или в другое место? [Да]/[Нет]");
                 String cardLocationChoice = reader.readLine();
                 if (cardLocationChoice.equals("Нет")) newCardPlace = true;
@@ -266,14 +267,30 @@ public class Player {
         for (int i = 0; i < field.size(); i++) {
             if (field.get(i).getActiveCards().containsKey(this)) {
                 if (field.get(i).getActiveCards().get(this).get(0).size() == 1) {
+                //  if (!field.get(selectedTarget).getActiveCards().get(this).get(0).isEmpty()){
                     Map<Spell, Boolean> spell = field.get(i).getActiveCards().get(this).get(0).getLast();
                     for (Map.Entry<Spell, Boolean> entry : spell.entrySet()) {
                         hand.addSpellToDiscard(entry.getKey());
                     }
+                    field.get(i).getActiveCards().get(this).get(0).pollLast();
+                }
+                if (field.get(i).getActiveCards().get(this).get(0).size() == 2) {
+                    //  if (!field.get(selectedTarget).getActiveCards().get(this).get(0).isEmpty()){
+                    Map<Spell, Boolean> spell = field.get(i).getActiveCards().get(this).get(0).getLast();
+                    for (Map.Entry<Spell, Boolean> entry : spell.entrySet()) {
+                        hand.addSpellToDiscard(entry.getKey());
+                    }
+                    field.get(i).getActiveCards().get(this).get(0).pollLast();
+                    spell = field.get(i).getActiveCards().get(this).get(0).getLast();
+                    for (Map.Entry<Spell, Boolean> entry : spell.entrySet()) {
+                        hand.addSpellToDiscard(entry.getKey());
+                    }
+                    field.get(i).getActiveCards().get(this).get(0).pollLast();
                 }
             }
         }
     }
+
 
     @Override
     public String toString() {

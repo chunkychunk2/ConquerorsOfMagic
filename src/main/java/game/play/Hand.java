@@ -1,6 +1,6 @@
 package game.play;
 
-import game.cards.*;
+import game.spells.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +25,7 @@ public class Hand {
         spells.add(new Wall());
         spells.add(new LightningBolt());
         spells.add(new Light());
-        spells.add(new Freezing());
+        spells.add(new Freeze());
         spells.add(new FireBall());
     }
 

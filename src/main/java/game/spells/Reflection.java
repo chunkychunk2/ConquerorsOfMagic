@@ -1,4 +1,4 @@
-package game.cards;
+package game.spells;
 
 public class Reflection extends Spell {
     @Override

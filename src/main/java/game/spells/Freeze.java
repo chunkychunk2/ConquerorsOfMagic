@@ -1,6 +1,6 @@
-package game.cards;
+package game.spells;
 
-public class Freezing extends Spell {
+public class Freeze extends Spell {
     @Override
     public String toString() {
         return "Заморозка";

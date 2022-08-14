@@ -1,4 +1,4 @@
-package game.cards;
+package game.spells;
 
 public abstract class Spell {
 }
