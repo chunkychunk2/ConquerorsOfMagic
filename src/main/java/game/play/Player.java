@@ -163,8 +163,8 @@ public class Player {
     public boolean cardLocation(List<Target> field, int i) throws IOException {
         boolean newCardPlace = false;
         if (field.get(selectedTarget).getActiveCards().containsKey(this)) {
-           // if (i == 2 && !field.get(selectedTarget).getActiveCards().get(this).get(0).isEmpty()) {
-                 if (i == 2 && field.get(selectedTarget).getActiveCards().get(this).get(0).size() == 1) {
+            // if (i == 2 && !field.get(selectedTarget).getActiveCards().get(this).get(0).isEmpty()) {
+            if (i == 2 && field.get(selectedTarget).getActiveCards().get(this).get(0).size() == 1) {
                 System.out.println("Разместить заклинание поверх своей ранее неразыгранной карты или в другое место? [Да]/[Нет]");
                 String cardLocationChoice = reader.readLine();
                 if (cardLocationChoice.equals("Нет")) newCardPlace = true;
@@ -199,6 +199,21 @@ public class Player {
         int spellLevel = 0;
         int decision = this.getSelectedTarget();
         int spellNumber = 0;
+        List<Integer> targets = new ArrayList<>();
+        for (int i = 0; i < field.size(); i++) {
+            if (field.get(i).getActiveCards().containsKey(this)) {
+                if (field.get(selectedTarget).getActiveCards().get(this).get(0).size() == 1) targets.add(i);
+            }
+        }
+        // если заклинания находятся на разных целях
+        if (targets.size() == 2) {
+            System.out.println("Какое заклинание разыграть?");
+            System.out.println("Заклинание напротив [1] " + field.get(targets.get(0)) + " или напротив [2] " + field.get(targets.get(1)));
+            decision = Integer.parseInt(reader.readLine());
+            if (decision == 2) decision = field.indexOf(field.get(targets.get(1)));
+            else decision = field.indexOf(field.get(targets.get(0)));
+        }
+        // если заклинания находится на одной цели
         if (field.get(decision).getActiveCards().containsKey(this)) {
             if (field.get(decision).getActiveCards().get(this).size() == 2) {
                 System.out.println("Какое заклинание разыграть?");
@@ -215,9 +230,10 @@ public class Player {
             hand.addSpellToDiscard(entry.getKey());
             if (field.get(selectedTarget).getActiveCards().get(this).get(0).size() == 1) spellLevel = 1;
             if (field.get(selectedTarget).getActiveCards().get(this).get(0).size() == 2) spellLevel = 2;
-                if (entry.getValue().equals(false))
+            if (entry.getValue().equals(false))
                 this.getTarget().getSpellEffect(entry.getKey(), this.getTarget().getLinePosition(), field, spellLevel);
-            else field.get(decision).getSpellEffect(entry.getKey(), this.getTarget().getLinePosition(), field, spellLevel);
+            else
+                field.get(decision).getSpellEffect(entry.getKey(), this.getTarget().getLinePosition(), field, spellLevel);
 
         }
         field.get(decision).getActiveCards().get(this).get(spellNumber).pollLast();
@@ -226,10 +242,11 @@ public class Player {
     /**
      * Метод размещает заклинание на выбранную цель с учетом направления заклинания и места размещения
      * Если заклинание размещается на ранее размещенное, то образуется стэк
-     * @param spell - заклинание
-     * @param target - цель заклинания
+     *
+     * @param spell     - заклинание
+     * @param target    - цель заклинания
      * @param direction - направление заклинания
-     * @param newPlace - новое место заклинания или размещение на свою ранее размещенную карту
+     * @param newPlace  - новое место заклинания или размещение на свою ранее размещенную карту
      * @throws IOException
      */
     public void placeSpell(int spell, Target target, boolean direction, boolean newPlace) throws IOException {
@@ -253,13 +270,14 @@ public class Player {
 
     /**
      * Метод отправляет в сброс все размещенные карты
+     *
      * @param field - игровое поле
      */
     public void discardAll(List<Target> field) {
         for (int i = 0; i < field.size(); i++) {
             if (field.get(i).getActiveCards().containsKey(this)) {
                 if (field.get(i).getActiveCards().get(this).get(0).size() == 1) {
-                //  if (!field.get(selectedTarget).getActiveCards().get(this).get(0).isEmpty()){
+                    //  if (!field.get(selectedTarget).getActiveCards().get(this).get(0).isEmpty()){
                     Map<Spell, Boolean> spell = field.get(i).getActiveCards().get(this).get(0).getLast();
                     for (Map.Entry<Spell, Boolean> entry : spell.entrySet()) {
                         hand.addSpellToDiscard(entry.getKey());
