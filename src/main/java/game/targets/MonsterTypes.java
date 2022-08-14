@@ -1,5 +1,5 @@
 package game.targets;
 
 public enum MonsterTypes {
-    UNDEAD, OTHERS;
+    UNDEAD, OTHERS, HUMAN;
 }

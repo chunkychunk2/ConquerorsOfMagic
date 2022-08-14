@@ -40,11 +40,6 @@ public class Game {
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-//        try {
-//            monstersList = Game.getMonsters();
-//        } catch (SQLException | ClassNotFoundException e) {
-//            throw new RuntimeException(e);
-//        }
     }
 
     /**
@@ -108,38 +103,81 @@ public class Game {
      */
     public static void dashAttack() {
         System.out.print("Атака монстра с рывком: ");
-        if (field.get(0).isDash()) {
-            System.out.print("Монстр атакует!\n");
-            int positionDamage = 0;
-            for (int i = 1; i < field.size(); i++) {
-                if (i == 1) positionDamage = 1;
-                if (i == field.size() - 1) positionDamage = -1;
-                if (!field.get(i).getActiveMarkers().isEmpty()) {
-                    if (field.get(i).getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
-                        field.get(i).getDamage(field.get(0).getDamagePower() - 2 + positionDamage);
-                        field.get(i).removeMarker();
+        if (field.get(0).getHp() > 0) {
+            if (!field.get(0).getActiveMarkers().isEmpty()) {
+                if (!field.get(0).getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
+                    if (field.get(0).isDash()) {
+                        System.out.print("Монстр атакует!\n");
+                        int positionDamage = 0;
+                        for (int i = 1; i < field.size(); i++) {
+                            if (i == 1) positionDamage = 1;
+                            if (i == field.size() - 1) positionDamage = -1;
+                            if (!field.get(i).getActiveMarkers().isEmpty()) {
+                                if (field.get(i).getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
+                                    field.get(i).getDamage(field.get(0).getDamagePower() - 2 + positionDamage);
+                                    field.get(i).removeMarker();
+                                }
+                            } else field.get(i).getDamage(field.get(0).getDamagePower() + positionDamage);
+                        }
+                    } else System.out.println("Монстр без рывка");
+                } else System.out.println("Монстр заморожен!");
+            } else {
+                if (field.get(0).isDash()) {
+                    System.out.print("Монстр атакует!\n");
+                    int positionDamage = 0;
+                    for (int i = 1; i < field.size(); i++) {
+                        if (i == 1) positionDamage = 1;
+                        if (i == field.size() - 1) positionDamage = -1;
+                        if (!field.get(i).getActiveMarkers().isEmpty()) {
+                            if (field.get(i).getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
+                                field.get(i).getDamage(field.get(0).getDamagePower() - 2 + positionDamage);
+                                field.get(i).removeMarker();
+                            }
+                        } else field.get(i).getDamage(field.get(0).getDamagePower() + positionDamage);
                     }
-                } else field.get(i).getDamage(field.get(0).getDamagePower() + positionDamage);
+                } else System.out.println("Монстр без рывка");
             }
-        } else System.out.println("Монстр без рывка");
+        } else System.out.println("Монстр мертв");
     }
 
     public static void monsterAttack() {
         System.out.print("Атака монстра без рывка: ");
-        if (!field.get(0).isDash()) {
-            System.out.print("Монстр атакует!\n");
-            int positionDamage = 0;
-            for (int i = 1; i < field.size(); i++) {
-                if (i == 1) positionDamage = 1;
-                if (i == field.size() - 1) positionDamage = -1;
-                if (!field.get(i).getActiveMarkers().isEmpty()) {
-                    if (field.get(i).getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
-                        field.get(i).getDamage(field.get(0).getDamagePower() - 2 + positionDamage);
-                        field.get(i).removeMarker();
+        if (field.get(0).getHp() > 0) {
+            if (!field.get(0).getActiveMarkers().isEmpty()) {
+                if (!field.get(0).getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
+                    if (!field.get(0).isDash()) {
+                        System.out.print("Монстр атакует!\n");
+                        int positionDamage = 0;
+                        for (int i = 1; i < field.size(); i++) {
+                            if (i == 1) positionDamage = 1;
+                            if (i == field.size() - 1) positionDamage = -1;
+                            if (!field.get(i).getActiveMarkers().isEmpty()) {
+                                if (field.get(i).getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
+                                    field.get(i).getDamage(field.get(0).getDamagePower() - 2 + positionDamage);
+                                    field.get(i).removeMarker();
+                                }
+                            } else field.get(i).getDamage(field.get(0).getDamagePower() + positionDamage);
+                        }
+                    } else System.out.println("Монстр с рывком");
+                } else System.out.println("Монстр заморожен!");
+            } else {
+                if (!field.get(0).isDash()) {
+                    System.out.print("Монстр атакует!\n");
+                    int positionDamage = 0;
+                    for (int i = 1; i < field.size(); i++) {
+                        if (i == 1) positionDamage = 1;
+                        if (i == field.size() - 1) positionDamage = -1;
+                        if (!field.get(i).getActiveMarkers().isEmpty()) {
+                            if (field.get(i).getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
+                                field.get(i).getDamage(field.get(0).getDamagePower() - 2 + positionDamage);
+                                field.get(i).removeMarker();
+                            }
+                        } else field.get(i).getDamage(field.get(0).getDamagePower() + positionDamage);
                     }
-                } else field.get(i).getDamage(field.get(0).getDamagePower() + positionDamage);
+                } else System.out.println("Монстр с рывком");
             }
-        } else System.out.println("Монстр с рывком");
+
+        } else System.out.println("Монстр мертв");
     }
 
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
@@ -189,7 +227,6 @@ public class Game {
                 }
             } else
                 player.placeSpell(player.spellCreation(), field.get(player.targetSelection(field)), player.directionSelection(), player.cardLocation(field, 1));
-
         }
 
         // Решение о розыгрыше карт
@@ -204,7 +241,6 @@ public class Game {
 
             } else {
                 if (player.drawDecision()) player.drawSpell(field);
-
             }
         }
 
@@ -223,7 +259,6 @@ public class Game {
 
         // Размещение карты
         for (Player player : players) {
-            // p1.placeSpell(p1.spellCreation(), field.get(p1.targetSelection(field)),p1.directionSelection(),p1.cardLocation(field,1));
             if (!player.getTarget().getActiveMarkers().isEmpty()) {
                 if (!player.getTarget().getActiveMarkers().getLast().equals(Marker.FREEZEMARKER))
                     player.placeSpell(player.spellCreation(), field.get(player.targetSelection(field)), player.directionSelection(), player.cardLocation(field, 2));
@@ -247,14 +282,12 @@ public class Game {
             } else {
                 for (Target target : field) {
                     if (target.getActiveCards().containsKey(player)) {
-                        //   if (target.getActiveCards().get(player).get(0).size() == 1) {
                         if (!target.getActiveCards().get(player).get(0).isEmpty()) {
                             if (player.drawDecision()) player.drawSpell(field);
                             break;
                         }
                     }
                 }
-
             }
         }
 

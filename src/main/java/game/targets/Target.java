@@ -7,6 +7,7 @@ import game.play.Player;
 import java.util.*;
 
 import static game.targets.ElementType.COMMON;
+import static game.targets.MonsterTypes.HUMAN;
 
 public abstract class Target {
 
@@ -66,6 +67,7 @@ public abstract class Target {
         setHp(10);
         activeCards = new HashMap<>();
         seteType(COMMON);
+        setmType(HUMAN);
         activeMarkers = new LinkedList<>();
     }
 
@@ -169,6 +171,7 @@ public abstract class Target {
 
     /**
      * Сеттер имени цели
+     *
      * @param name - имя
      */
     public void setName(String name) {
@@ -180,6 +183,13 @@ public abstract class Target {
      */
     public int getHp() {
         return hp;
+    }
+
+    /**
+     * Сеттер хп цели
+     */
+    public void heal(int points) {
+        hp += points;
     }
 
     /**
@@ -200,112 +210,128 @@ public abstract class Target {
      * @param d - кол-во урона
      */
     public void getDamage(int d) {
-        if (d<=0) d = 1;
+        if (d <= 0) d = 1;
         this.hp -= d;
     }
 
     /**
      * Метод определяет эффект от полученного заклинания учитывая прочие модификаторы
-     * @param spell - входящее заклинание
+     *
+     * @param spell    - входящее заклинание
      * @param position - позизиция заклинателя
-     * @param field - игровое поле
+     * @param field    - игровое поле
      */
-    public void getSpellEffect(Spell spell, int position, List<Target> field) {
+    public void getSpellEffect(Spell spell, int position, List<Target> field, int spellLevel) {
         // определение модификаторов позиции
         int positionPower = 0;
         int damageReduction = 0;
         int totalDamage = 0;
 
         // если цель монстр, то действую модификаторы позиций
-        if (field.get(0).equals(this)){
             if (position == 1) positionPower++;
-            else if (position == field.size()-1) positionPower--;
-        }
+            else if (position == field.size() - 1) positionPower--;
+
+        if (this.getmType().equals(HUMAN)) positionPower = 0;
 
         // если огненный шар
-         if (spell.getClass().equals(FireBall.class)){
+        if (spell.getClass().equals(FireBall.class)) {
 
-             // если у цели есть маркеры
-            if (!this.getActiveMarkers().isEmpty()){
+            int fireDamage = 0;
+            if (spellLevel == 1) fireDamage = 2;
+            if (spellLevel == 2) fireDamage = 4;
+
+            // если у цели есть маркеры
+            if (!this.getActiveMarkers().isEmpty()) {
                 // если цель заморожена
-                if (this.getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)){
+                if (this.getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
                     damageReduction = -2;
                     this.removeMarker();
                     System.out.println("Огненный шар снял маркер!");
                 }
             }
-             // если монстр ледяной
-             if (this.geteType().equals(ElementType.FROSTY)) {
-                 totalDamage = (4-damageReduction) <= 0 ? 1 : 4-damageReduction;
-                 this.getDamage(positionPower + totalDamage);
-                 System.out.println("Урон ледяному монстру");
-             }
-             // если монстр огненный
-             else if (this.geteType().equals(ElementType.FIERY)) {
-                 totalDamage = (1-damageReduction) <= 0 ? 1 : 1-damageReduction;
-                 this.getDamage(positionPower + totalDamage);
-                 System.out.println("Урон огненному монстру");
-             }
-             else {
-                 totalDamage = (2-damageReduction) <= 0 ? 1 : 2-damageReduction;
-                 System.out.println("Урон цели");
-                 System.out.println(" pos p " + positionPower);
-                 System.out.println(" total d " + totalDamage);
-                 this.getDamage(positionPower + totalDamage);
-             }
-         }
+            // если монстр ледяной
+            if (this.geteType().equals(ElementType.FROSTY)) {
+                totalDamage = (fireDamage + 2 + damageReduction) <= 0 ? 1 : fireDamage + 2 + damageReduction;
+                this.getDamage(positionPower + totalDamage);
+                System.out.println("Урон ледяному монстру");
+            }
+            // если монстр огненный
+            else if (this.geteType().equals(ElementType.FIERY)) {
+                totalDamage = (fireDamage - 1 + damageReduction) <= 0 ? 1 : fireDamage - 1 + damageReduction;
+                this.getDamage(positionPower + totalDamage);
+                System.out.println("Урон огненному монстру");
+            } else {
+                // System.out.println(" total d " + totalDamage);
+                totalDamage = (fireDamage + damageReduction) <= 0 ? 1 : fireDamage + damageReduction;
+                System.out.println("Урон цели");
+                //   System.out.println(" pos p " + positionPower);
+                // System.out.println(" total d " + totalDamage);
+                this.getDamage(positionPower + totalDamage);
+            }
+        }
         // если заклиниие заморозка
-         else if (spell.getClass().equals(Freeze.class)){
-             // если у цели есть маркеры
-             if (!this.getActiveMarkers().isEmpty()){
-                 // если цель заморожена
-                 if (this.getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)){
-                     damageReduction = -2;
-                     this.removeMarker();
-                 }
-             }
-             // если монстр ледяной
-             if (this.geteType().equals(ElementType.FROSTY)) {
-                 totalDamage = (1-damageReduction) <= 0 ? 1 : 1-damageReduction;
-                 this.getDamage(positionPower + totalDamage);
-                 this.addMarker(Marker.FREEZEMARKER);
-             }
-                 // если монстр огненный
-             else if (this.geteType().equals(ElementType.FIERY)) {
-                 totalDamage = (3-damageReduction) <= 0 ? 1 : 3-damageReduction;
-                 this.getDamage(positionPower + totalDamage);
-                 this.addMarker(Marker.FREEZEMARKER);
-             }
-             else {
-                 totalDamage = (1-damageReduction) <= 0 ? 1 : 1-damageReduction;
-                 this.getDamage(positionPower + totalDamage);
-                 this.addMarker(Marker.FREEZEMARKER);
-             }
-         }
-         else if (spell.getClass().equals(Light.class)){
-             System.out.println("Свет!!!");
-         }
-         else if (spell.getClass().equals(LightningBolt.class)){
-             System.out.println("Молния!!!");
-         }
-         else if (spell.getClass().equals(Reflection.class)){
-             System.out.println("Отражение!!!");
-         }
-         else if (spell.getClass().equals(Wall.class)){
-             System.out.println("Преграда!!!");
-         }
+        else if (spell.getClass().equals(Freeze.class)) {
+            int frostDamage = 0;
+            if (spellLevel == 1) frostDamage = 1;
+            if (spellLevel == 2) frostDamage = 3;
+            // если у цели есть маркеры
+            if (!this.getActiveMarkers().isEmpty()) {
+                // если цель заморожена
+                if (this.getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
+                    damageReduction = -2;
+                    this.removeMarker();
+                }
+            }
+            // если монстр ледяной
+            if (this.geteType().equals(ElementType.FROSTY)) {
+                totalDamage = (frostDamage - 1 + damageReduction) <= 0 ? 1 : frostDamage - 1 + damageReduction;
+                this.getDamage(positionPower + totalDamage);
+                this.addMarker(Marker.FREEZEMARKER);
+            }
+            // если монстр огненный
+            else if (this.geteType().equals(ElementType.FIERY)) {
+                totalDamage = (frostDamage + 2 + damageReduction) <= 0 ? 1 : frostDamage + 2 + damageReduction;
+                this.getDamage(positionPower + totalDamage);
+                this.addMarker(Marker.FREEZEMARKER);
+            } else {
+                totalDamage = (frostDamage + damageReduction) <= 0 ? 1 : frostDamage + damageReduction;
+                this.getDamage(positionPower + totalDamage);
+                this.addMarker(Marker.FREEZEMARKER);
+            }
+        } else if (spell.getClass().equals(Light.class)) {
+            int healPoints = 0;
+            if (spellLevel == 1) healPoints = 2;
+            if (spellLevel == 2) healPoints = 4;
+            if (this.getHp() >= 0) {
+                if (this.getmType().equals(MonsterTypes.UNDEAD)) {
+                    this.getDamage(healPoints + positionPower);
+                } else this.heal(healPoints);
+            }
+        } else if (spell.getClass().equals(LightningBolt.class)) {
+            System.out.println("Молния!!!");
+        } else if (spell.getClass().equals(Reflection.class)) {
+            System.out.println("Отражение!!!");
+        } else if (spell.getClass().equals(Wall.class)) {
+            // если у цели есть маркеры
+            if (!this.getActiveMarkers().isEmpty()) {
+                // если у цели есть маркер преграды
+                if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
+                    this.removeMarker();
+                } else this.addMarker(Marker.WALLMARKER);
+            }
+        }
     }
 
 
-    public void addMarker(Marker marker){
+    public void addMarker(Marker marker) {
         activeMarkers.add(marker);
     }
 
-    public LinkedList<Marker> getActiveMarkers(){
+    public LinkedList<Marker> getActiveMarkers() {
         return activeMarkers;
     }
 
-    public void removeMarker(){
+    public void removeMarker() {
         activeMarkers.removeLast();
     }
 }

@@ -196,21 +196,10 @@ public class Player {
      * @throws IOException
      */
     public void drawSpell(List<Target> field) throws IOException {
+        int spellLevel = 0;
         int decision = this.getSelectedTarget();
         int spellNumber = 0;
-        List<Integer> targets = new ArrayList<>();
-        for (int i = 0; i < field.size(); i++) {
-            if (field.get(i).getActiveCards().containsKey(this)) {
-                if (i == 2 && field.get(selectedTarget).getActiveCards().get(this).get(0).size() == 1) targets.add(i);
-            }
-        }
-        if (targets.size() == 2) {
-            System.out.println("Какое заклинание разыграть?");
-            System.out.println("Заклинание напротив [1] " + field.get(targets.get(0)) + " или напротив [2] " + field.get(targets.get(1)));
-            decision = Integer.parseInt(reader.readLine());
-            if (decision == 2) decision = field.indexOf(field.get(targets.get(1)));
-            else decision = field.indexOf(field.get(targets.get(0)));
-        } else if (field.get(decision).getActiveCards().containsKey(this)) {
+        if (field.get(decision).getActiveCards().containsKey(this)) {
             if (field.get(decision).getActiveCards().get(this).size() == 2) {
                 System.out.println("Какое заклинание разыграть?");
                 System.out.println("[1] " + field.get(decision).getActiveCards().get(this).get(0).getLast() +
@@ -224,9 +213,11 @@ public class Player {
 //            System.out.println(entry.getValue());
 //            System.out.println(entry.getKey());
             hand.addSpellToDiscard(entry.getKey());
-            if (entry.getValue().equals(false))
-                this.getTarget().getSpellEffect(entry.getKey(), this.getTarget().getLinePosition(), field);
-            else field.get(decision).getSpellEffect(entry.getKey(), this.getTarget().getLinePosition(), field);
+            if (field.get(selectedTarget).getActiveCards().get(this).get(0).size() == 1) spellLevel = 1;
+            if (field.get(selectedTarget).getActiveCards().get(this).get(0).size() == 2) spellLevel = 2;
+                if (entry.getValue().equals(false))
+                this.getTarget().getSpellEffect(entry.getKey(), this.getTarget().getLinePosition(), field, spellLevel);
+            else field.get(decision).getSpellEffect(entry.getKey(), this.getTarget().getLinePosition(), field, spellLevel);
 
         }
         field.get(decision).getActiveCards().get(this).get(spellNumber).pollLast();
@@ -257,6 +248,7 @@ public class Player {
                 target.getActiveCards().get(this).add(playerSpells);
             }
         } else target.getActiveCards().get(this).get(0).add(playerSpell);
+
     }
 
     /**
