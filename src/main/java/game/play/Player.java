@@ -223,15 +223,15 @@ public class Player {
         }
         // если заклинания находятся на разных целях
 
-            if (targets.size() == 2) {
-                if (!selectedTargets.get(0).equals(selectedTargets.get(1))) {
-                    System.out.println("Какое заклинание разыграть?");
-                    System.out.println("Заклинание напротив [1] " + field.get(selectedTargets.get(0)) + " или напротив [2] " + field.get(selectedTargets.get(1)));
-                    decision = Integer.parseInt(reader.readLine());
-                }
-                if (decision == 2) decision = field.indexOf(field.get(selectedTargets.get(1)));
-                else decision = field.indexOf(field.get(selectedTargets.get(0)));
+        if (targets.size() == 2) {
+            if (!selectedTargets.get(0).equals(selectedTargets.get(1))) {
+                System.out.println("Какое заклинание разыграть?");
+                System.out.println("Заклинание напротив [1] " + field.get(selectedTargets.get(0)) + " или напротив [2] " + field.get(selectedTargets.get(1)));
+                decision = Integer.parseInt(reader.readLine());
             }
+            if (decision == 2) decision = field.indexOf(field.get(selectedTargets.get(1)));
+            else decision = field.indexOf(field.get(selectedTargets.get(0)));
+        }
 
         // если заклинания находится на одной цели
         if (field.get(decision).getActiveCards().containsKey(this)) {
@@ -254,7 +254,6 @@ public class Player {
                 this.getTarget().getSpellEffect(entry.getKey(), this.getTarget().getLinePosition(), field, spellLevel);
             else
                 field.get(decision).getSpellEffect(entry.getKey(), this.getTarget().getLinePosition(), field, spellLevel);
-
         }
         int index = 0;
         for (int i = 0; i < this.selectedTargets.size(); i++) {
@@ -291,7 +290,6 @@ public class Player {
                 target.getActiveCards().get(this).add(playerSpells);
             }
         } else target.getActiveCards().get(this).get(0).add(playerSpell);
-
     }
 
     /**

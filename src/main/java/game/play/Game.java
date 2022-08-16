@@ -117,6 +117,11 @@ public class Game {
                                     field.get(i).getDamage(field.get(0).getDamagePower() - 2 + positionDamage);
                                     field.get(i).removeMarker();
                                 }
+                                else if (field.get(i).getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
+                                    System.out.println("Преграда поглотила урон");
+                                    field.get(i).removeMarker();
+                                }
+
                             } else field.get(i).getDamage(field.get(0).getDamagePower() + positionDamage);
                         }
                     } else System.out.println("Монстр без рывка");
@@ -131,6 +136,10 @@ public class Game {
                         if (!field.get(i).getActiveMarkers().isEmpty()) {
                             if (field.get(i).getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
                                 field.get(i).getDamage(field.get(0).getDamagePower() - 2 + positionDamage);
+                                field.get(i).removeMarker();
+                            }
+                            else if (field.get(i).getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
+                                System.out.println("Преграда поглотила урон");
                                 field.get(i).removeMarker();
                             }
                         } else field.get(i).getDamage(field.get(0).getDamagePower() + positionDamage);
@@ -156,6 +165,10 @@ public class Game {
                                     field.get(i).getDamage(field.get(0).getDamagePower() - 2 + positionDamage);
                                     field.get(i).removeMarker();
                                 }
+                                else if (field.get(i).getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
+                                    System.out.println("Преграда поглотила урон");
+                                    field.get(i).removeMarker();
+                                }
                             } else field.get(i).getDamage(field.get(0).getDamagePower() + positionDamage);
                         }
                     } else System.out.println("Монстр с рывком");
@@ -170,6 +183,10 @@ public class Game {
                         if (!field.get(i).getActiveMarkers().isEmpty()) {
                             if (field.get(i).getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
                                 field.get(i).getDamage(field.get(0).getDamagePower() - 2 + positionDamage);
+                                field.get(i).removeMarker();
+                            }
+                            else if (field.get(i).getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
+                                System.out.println("Преграда поглотила урон");
                                 field.get(i).removeMarker();
                             }
                         } else field.get(i).getDamage(field.get(0).getDamagePower() + positionDamage);
@@ -217,8 +234,7 @@ public class Game {
 
         // Размещение карты
         for (Player player : players) {
-            // p1.placeSpell(p1.spellCreation(), field.get(p1.targetSelection(field)),p1.directionSelection(),p1.cardLocation(field,1));
-            if (!player.getTarget().getActiveMarkers().isEmpty()) {
+           if (!player.getTarget().getActiveMarkers().isEmpty()) {
                 if (!player.getTarget().getActiveMarkers().getLast().equals(Marker.FREEZEMARKER))
                     player.placeSpell(player.spellCreation(-1), field.get(player.targetSelection(field,-1)), player.directionSelection("s"), player.cardLocation(field, 1,"s"));
                 else {

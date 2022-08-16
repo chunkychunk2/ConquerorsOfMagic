@@ -20,7 +20,7 @@ public class Hand {
     /**
      * Конструктор создает стартовую руку заклинаний
      */
-    Hand() {
+     Hand() {
         spells.add(new Reflection());
         spells.add(new Wall());
         spells.add(new LightningBolt());
@@ -48,7 +48,7 @@ public class Hand {
     }
 
     /**
-     * Метод восстнавливает карту из сброса по индексу
+     * Метод восстанавливает карту из сброса по индексу
      */
     public Spell getSpellFromDiscard(int i){
         Spell spell = discard.get(i);

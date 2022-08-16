@@ -6,6 +6,7 @@ public class GreenMonsters extends Target {
                          String monsterType, String elementType, String name) {
         setDamagePower(damage);
         setHp(hp);
+        setMaxHp(hp);
         setDash(b);
         if ("Magical".equals(damageType)) {
             setdType(DamageType.MAGICAL);

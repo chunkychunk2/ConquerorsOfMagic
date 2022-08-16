@@ -20,6 +20,12 @@ public abstract class Target {
      * Здоровье цели
      */
     private int hp;
+
+    /**
+     * Максимальное здоровье цели
+     */
+    private int maxHp;
+
     /**
      * Активные карты цели цели
      */
@@ -65,9 +71,11 @@ public abstract class Target {
      */
     Target() {
         setHp(10);
+        setMaxHp(10);
         activeCards = new HashMap<>();
         seteType(COMMON);
         setmType(HUMAN);
+
         activeMarkers = new LinkedList<>();
     }
 
@@ -199,6 +207,13 @@ public abstract class Target {
         this.hp = hp;
     }
 
+    /**
+     * Сеттер максимального кол-ва хп цели
+     */
+    public void setMaxHp(int hp) {
+        this.maxHp = hp;
+    }
+
     @Override
     public String toString() {
         return name;
@@ -248,7 +263,7 @@ public abstract class Target {
                     this.removeMarker();
                     System.out.println("Огненный шар снял маркер!");
                 }
-                if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
+                else if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
                     isWall = true;
                     this.removeMarker();
                     System.out.println("Преграда поглотила урон!");
@@ -258,22 +273,20 @@ public abstract class Target {
             if (!isWall) {
                 // если монстр ледяной
                 if (this.geteType().equals(ElementType.FROSTY)) {
-                    totalDamage = (fireDamage + 2 + damageReduction) <= 0 ? 1 : fireDamage + 2 + damageReduction;
-                    this.getDamage(positionPower + totalDamage);
+                    totalDamage = (fireDamage + 2 + damageReduction + positionPower) <= 0 ? 1 : fireDamage + 2 + damageReduction + positionPower;
+                    this.getDamage(totalDamage);
                     System.out.println("Урон ледяному монстру");
                 }
                 // если монстр огненный
                 else if (this.geteType().equals(ElementType.FIERY)) {
-                    totalDamage = (fireDamage - 1 + damageReduction) <= 0 ? 1 : fireDamage - 1 + damageReduction;
-                    this.getDamage(positionPower + totalDamage);
+                    totalDamage = (fireDamage - 1 + damageReduction + positionPower) <= 0 ? 1 : fireDamage - 1 + damageReduction + positionPower;
+                    this.getDamage(totalDamage);
                     System.out.println("Урон огненному монстру");
                 } else {
-                    // System.out.println(" total d " + totalDamage);
-                    totalDamage = (fireDamage + damageReduction) <= 0 ? 1 : fireDamage + damageReduction;
+                    totalDamage = (fireDamage + damageReduction + positionPower) <= 0 ? 1 : fireDamage + damageReduction + positionPower;
                     System.out.println("Урон цели");
-                    //   System.out.println(" pos p " + positionPower);
-                    // System.out.println(" total d " + totalDamage);
-                    this.getDamage(positionPower + totalDamage);
+                    System.out.println(totalDamage);
+                    this.getDamage(totalDamage);
                 }
             }
         }
@@ -289,7 +302,7 @@ public abstract class Target {
                     damageReduction = -2;
                     this.removeMarker();
                 }
-                if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
+                else if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
                     isWall = true;
                     this.removeMarker();
                     System.out.println("Преграда поглотила урон!");
@@ -320,10 +333,8 @@ public abstract class Target {
                 // если цель заморожена
                 if (this.getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
                     damageReduction = -2;
-                    this.removeMarker();
-                    System.out.println("Огненный шар снял маркер!");
                 }
-                if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
+                else if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
                     isWall = true;
                     this.removeMarker();
                     System.out.println("Преграда поглотила урон!");
@@ -334,18 +345,38 @@ public abstract class Target {
                 if (spellLevel == 2) healPoints = 4;
                 if (this.getHp() >= 0) {
                     if (this.getmType().equals(MonsterTypes.UNDEAD)) {
-                        this.getDamage(healPoints + positionPower);
-                    } else this.heal(healPoints);
+                        this.getDamage(healPoints + positionPower + damageReduction);
+                    } else {
+                        this.heal(healPoints);
+                        if (this.hp>this.maxHp) hp = maxHp;
+                    }
                 }
             }
         } else if (spell.getClass().equals(LightningBolt.class)) {
             System.out.println("Молния!!!");
         } else if (spell.getClass().equals(Reflection.class)) {
+            // если у цели есть маркер преграды
+            if (!this.getActiveMarkers().isEmpty()){
+                if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) this.removeMarker();
+            }
             System.out.println("Отражение!!!");
         } else if (spell.getClass().equals(Wall.class)) {
             // если у цели есть маркер преграды
-            if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) this.removeMarker();
-            else this.addMarker(Marker.WALLMARKER);
+            if (!this.getActiveMarkers().isEmpty()){
+                if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
+                    System.out.println("Преграда поглотила урон");
+                    this.removeMarker();
+                }
+            }
+            else {
+                if (spellLevel == 1) this.addMarker(Marker.WALLMARKER);
+                if (spellLevel == 2) {
+                    System.out.println("Преграда 2 уровня!");
+                    this.addMarker(Marker.WALLMARKER);
+                    this.addMarker(Marker.WALLMARKER);
+                }
+
+            }
 
         }
     }
