@@ -103,6 +103,7 @@ public class Game {
      */
     public static void dashAttack() {
         System.out.print("Атака монстра с рывком: ");
+        int totalDamage = 0;
         if (field.get(0).getHp() > 0) {
             if (!field.get(0).getActiveMarkers().isEmpty()) {
                 if (!field.get(0).getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
@@ -120,6 +121,78 @@ public class Game {
                                 else if (field.get(i).getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
                                     System.out.println("Преграда поглотила урон");
                                     field.get(i).removeMarker();
+                                }
+                                else if (field.get(i).getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
+                                    field.get(i).removeMarker();
+                                    boolean pingPong = true;
+                                    // пока в взаимодействующих есть маркер отражения или преграды
+                                    while (pingPong) {
+                                        // если у кастера есть маркеры
+                                        if (!field.get(0).getActiveMarkers().isEmpty()) {
+                                            // если у кастера есть маркер отражения, то теряется маркер и перенаправляется на цель
+                                            if (field.get(0).getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
+                                                field.get(0).removeMarker();
+                                                // если у цели есть маркеры
+                                                if (!field.get(i).getActiveMarkers().isEmpty()) {
+                                                    // если у цели есть маркер отражения, то теряется маркер и перенаправляется на кастера
+                                                    if (field.get(i).getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
+                                                        field.get(i).removeMarker();
+                                                    }
+                                                    // если у цели есть маркер преграды, то теряется маркер и отражение поглощается
+                                                    else if (field.get(i).getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
+                                                        field.get(i).removeMarker();
+                                                        pingPong = false;
+                                                    }
+                                                    // если у цели есть нет маркера преграды и отражения, то фаербол срабатывает
+                                                    else {
+                                                        if (field.get(i).getHp() > 0) {
+                                                                totalDamage = (field.get(0).getDamagePower() + positionDamage) <= 0 ? 1 : field.get(0).getDamagePower() + positionDamage ;
+                                                                System.out.println("Урон цели");
+                                                                System.out.println(totalDamage);
+                                                                field.get(i).getDamage(totalDamage);
+
+                                                        }
+                                                        pingPong = false;
+                                                    }
+                                                }
+                                                // если у цели есть нет маркеров, то фаербол срабатывает
+                                                else {
+                                                    if (field.get(i).getHp() > 0) {
+                                                        totalDamage = (field.get(0).getDamagePower() + positionDamage) <= 0 ? 1 : field.get(0).getDamagePower() + positionDamage ;
+                                                        System.out.println("Урон цели");
+                                                        System.out.println(totalDamage);
+                                                        field.get(i).getDamage(totalDamage);
+
+                                                    }
+                                                    pingPong = false;
+                                                }
+                                            }
+                                            // если у кастера есть маркер преграды, то теряется маркер и отражение поглощается
+                                            else if (field.get(0).getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
+                                                field.get(0).removeMarker();
+                                                pingPong = false;
+                                            }
+                                            // если у кастера нет маркера, то фаербол срабатывает
+                                            else {
+                                                if (field.get(0).getHp() > 0) {
+                                                    totalDamage = (field.get(0).getDamagePower() + positionDamage) <= 0 ? 1 : field.get(0).getDamagePower() + positionDamage ;
+                                                    System.out.println("Урон цели");
+                                                    System.out.println(totalDamage);
+                                                    field.get(0).getDamage(totalDamage);
+                                                }
+                                                pingPong = false;
+                                            }
+                                            // если у кастера нет маркеров, то фаербол срабатывает
+                                        } else {
+                                            if (field.get(0).getHp() > 0) {
+                                                totalDamage = (field.get(0).getDamagePower() + positionDamage) <= 0 ? 1 : field.get(0).getDamagePower() + positionDamage ;
+                                                System.out.println("Урон цели");
+                                                System.out.println(totalDamage);
+                                                field.get(0).getDamage(totalDamage);
+                                            }
+                                            pingPong = false;
+                                        }
+                                    }
                                 }
 
                             } else field.get(i).getDamage(field.get(0).getDamagePower() + positionDamage);
@@ -150,6 +223,7 @@ public class Game {
     }
 
     public static void monsterAttack() {
+        int totalDamage = 0;
         System.out.print("Атака монстра без рывка: ");
         if (field.get(0).getHp() > 0) {
             if (!field.get(0).getActiveMarkers().isEmpty()) {
@@ -168,6 +242,78 @@ public class Game {
                                 else if (field.get(i).getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
                                     System.out.println("Преграда поглотила урон");
                                     field.get(i).removeMarker();
+                                }
+                                else if (field.get(i).getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
+                                    field.get(i).removeMarker();
+                                    boolean pingPong = true;
+                                    // пока в взаимодействующих есть маркер отражения или преграды
+                                    while (pingPong) {
+                                        // если у кастера есть маркеры
+                                        if (!field.get(0).getActiveMarkers().isEmpty()) {
+                                            // если у кастера есть маркер отражения, то теряется маркер и перенаправляется на цель
+                                            if (field.get(0).getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
+                                                field.get(0).removeMarker();
+                                                // если у цели есть маркеры
+                                                if (!field.get(i).getActiveMarkers().isEmpty()) {
+                                                    // если у цели есть маркер отражения, то теряется маркер и перенаправляется на кастера
+                                                    if (field.get(i).getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
+                                                        field.get(i).removeMarker();
+                                                    }
+                                                    // если у цели есть маркер преграды, то теряется маркер и отражение поглощается
+                                                    else if (field.get(i).getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
+                                                        field.get(i).removeMarker();
+                                                        pingPong = false;
+                                                    }
+                                                    // если у цели есть нет маркера преграды и отражения, то фаербол срабатывает
+                                                    else {
+                                                        if (field.get(i).getHp() > 0) {
+                                                            totalDamage = (field.get(0).getDamagePower() + positionDamage) <= 0 ? 1 : field.get(0).getDamagePower() + positionDamage ;
+                                                            System.out.println("Урон цели");
+                                                            System.out.println(totalDamage);
+                                                            field.get(i).getDamage(totalDamage);
+
+                                                        }
+                                                        pingPong = false;
+                                                    }
+                                                }
+                                                // если у цели есть нет маркеров, то фаербол срабатывает
+                                                else {
+                                                    if (field.get(i).getHp() > 0) {
+                                                        totalDamage = (field.get(0).getDamagePower() + positionDamage) <= 0 ? 1 : field.get(0).getDamagePower() + positionDamage ;
+                                                        System.out.println("Урон цели");
+                                                        System.out.println(totalDamage);
+                                                        field.get(i).getDamage(totalDamage);
+
+                                                    }
+                                                    pingPong = false;
+                                                }
+                                            }
+                                            // если у кастера есть маркер преграды, то теряется маркер и отражение поглощается
+                                            else if (field.get(0).getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
+                                                field.get(0).removeMarker();
+                                                pingPong = false;
+                                            }
+                                            // если у кастера нет маркера, то фаербол срабатывает
+                                            else {
+                                                if (field.get(0).getHp() > 0) {
+                                                    totalDamage = (field.get(0).getDamagePower() + positionDamage) <= 0 ? 1 : field.get(0).getDamagePower() + positionDamage ;
+                                                    System.out.println("Урон цели");
+                                                    System.out.println(totalDamage);
+                                                    field.get(0).getDamage(totalDamage);
+                                                }
+                                                pingPong = false;
+                                            }
+                                            // если у кастера нет маркеров, то фаербол срабатывает
+                                        } else {
+                                            if (field.get(0).getHp() > 0) {
+                                                totalDamage = (field.get(0).getDamagePower() + positionDamage) <= 0 ? 1 : field.get(0).getDamagePower() + positionDamage ;
+                                                System.out.println("Урон цели");
+                                                System.out.println(totalDamage);
+                                                field.get(0).getDamage(totalDamage);
+                                            }
+                                            pingPong = false;
+                                        }
+                                    }
                                 }
                             } else field.get(i).getDamage(field.get(0).getDamagePower() + positionDamage);
                         }
@@ -230,6 +376,7 @@ public class Game {
 
         for (Target target : field) {
             System.out.println(target + " " + target.getHp());
+            System.out.println(target + " " + target.getActiveMarkers());
         }
 
         // Размещение карты
@@ -249,14 +396,14 @@ public class Game {
         for (Player player : players) {
             if (!player.getTarget().getActiveMarkers().isEmpty()) {
                 if (!player.getTarget().getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
-                    if (player.drawDecision("s")) player.drawSpell(field);
+                    if (player.drawDecision("s")) player.drawSpell(field, player);
                 } else {
                     player.discardAll(field);
                     System.out.println(player + " заморожен и пропускает ход!");
                 }
 
             } else {
-                if (player.drawDecision("s")) player.drawSpell(field);
+                if (player.drawDecision("s")) player.drawSpell(field, player);
             }
         }
 
@@ -290,7 +437,7 @@ public class Game {
         for (Player player : players) {
             if (!player.getTarget().getActiveMarkers().isEmpty()) {
                 if (!player.getTarget().getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
-                    if (player.drawDecision("s")) player.drawSpell(field);
+                    if (player.drawDecision("s")) player.drawSpell(field, player);
                 } else {
                     player.discardAll(field);
                     System.out.println(player + " заморожен и пропускает ход!");
@@ -299,7 +446,7 @@ public class Game {
                 for (Target target : field) {
                     if (target.getActiveCards().containsKey(player)) {
                         if (!target.getActiveCards().get(player).get(0).isEmpty()) {
-                            if (player.drawDecision("s")) player.drawSpell(field);
+                            if (player.drawDecision("s")) player.drawSpell(field, player);
                             break;
                         }
                     }
@@ -321,6 +468,15 @@ public class Game {
 
         for (Target target : field) {
             System.out.println(target + " " + target.getHp());
+        }
+
+        // фаза истощения
+        for (Player player : players) {
+            player.getTarget().exhaustion();
+        }
+
+        for (Player player : players) {
+            System.out.println(player.getTarget().getActiveMarkers());
         }
     }
 }

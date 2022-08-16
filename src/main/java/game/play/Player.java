@@ -211,7 +211,7 @@ public class Player {
      * @param field - игровое поле
      * @throws IOException
      */
-    public void drawSpell(List<Target> field) throws IOException {
+    public void drawSpell(List<Target> field, Player player) throws IOException {
         int spellLevel = 0;
         int decision = this.getSelectedTarget();
         int spellNumber = 0;
@@ -251,9 +251,9 @@ public class Player {
             if (field.get(selectedTarget).getActiveCards().get(this).get(0).size() == 1) spellLevel = 1;
             if (field.get(selectedTarget).getActiveCards().get(this).get(0).size() == 2) spellLevel = 2;
             if (entry.getValue().equals(false))
-                this.getTarget().getSpellEffect(entry.getKey(), this.getTarget().getLinePosition(), field, spellLevel);
+                this.getTarget().getSpellEffect(entry.getKey(), this.getTarget().getLinePosition(), field, spellLevel, player);
             else
-                field.get(decision).getSpellEffect(entry.getKey(), this.getTarget().getLinePosition(), field, spellLevel);
+                field.get(decision).getSpellEffect(entry.getKey(), this.getTarget().getLinePosition(), field, spellLevel, player);
         }
         int index = 0;
         for (int i = 0; i < this.selectedTargets.size(); i++) {
