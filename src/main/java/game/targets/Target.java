@@ -11,6 +11,8 @@ import static game.targets.MonsterTypes.HUMAN;
 
 public abstract class Target {
 
+    static int lightings = 0;
+
     /**
      * Имя цели
      */
@@ -78,10 +80,14 @@ public abstract class Target {
 
         activeMarkers = new LinkedList<>();
         // добавляет вначале игры маркеры игрокам
-//        this.addMarker(Marker.REFLECTIONMARKER);
-//        this.addMarker(Marker.REFLECTIONMARKER);
-        this.addMarker(Marker.WALLMARKER);
-        this.addMarker(Marker.WALLMARKER);
+        this.addMarker(Marker.REFLECTIONMARKER);
+        //this.addMarker(Marker.WALLMARKER);
+        this.addMarker(Marker.REFLECTIONMARKER);
+        this.addMarker(Marker.REFLECTIONMARKER);
+    }
+
+    public static void setLightings() {
+        lightings = 0;
     }
 
     /**
@@ -246,6 +252,14 @@ public abstract class Target {
         int positionPower = 0;
         int damageReduction = 0;
         int totalDamage = 0;
+        boolean pingPong = true;
+
+        if (spellLevel == 1) {
+            System.out.println("Разыгрывается " + spell + " 1 уровня");
+        }
+        if (spellLevel == 2) {
+            System.out.println("Разыгрывается " + spell + " 2 уровня");
+        }
 
         // если цель монстр, то действую модификаторы позиций
         if (position == 1) positionPower++;
@@ -253,7 +267,7 @@ public abstract class Target {
 
         if (this.getmType().equals(HUMAN)) positionPower = 0;
 
-        // если огненный шар
+        // если огненный шар -------------------------------------------------------------------------------
         if (spell.getClass().equals(FireBall.class)) {
             int fireDamage = 0;
             if (spellLevel == 1) fireDamage = 2;
@@ -265,13 +279,27 @@ public abstract class Target {
                 if (this.getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
                     damageReduction = -2;
                     this.removeMarker();
-                    System.out.println("Огненный шар снял маркер!");
+                    if (this.getHp() > 0) {
+                        this.removeMarker();
+                        // если монстр ледяной
+                        if (this.geteType().equals(ElementType.FROSTY)) {
+                            totalDamage = (fireDamage + 2 + damageReduction + positionPower) <= 0 ? 1 : fireDamage + 2 + damageReduction + positionPower;
+                            }
+                        // если монстр огненный
+                        else if (this.geteType().equals(ElementType.FIERY)) {
+                            totalDamage = (fireDamage - 1 + damageReduction + positionPower) <= 0 ? 1 : fireDamage - 1 + damageReduction + positionPower;
+                        } else {
+                            totalDamage = (fireDamage + damageReduction + positionPower) <= 0 ? 1 : fireDamage + damageReduction + positionPower;
+                       }
+                        this.getDamage(totalDamage);
+                        System.out.println("Огненный шар разморозил цель и " + this + " получил " + totalDamage + " урона огненным шаром!");
+                    }
                 } else if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
                     this.removeMarker();
-                    System.out.println("Преграда поглотила урон!");
+                    System.out.println(this + " поглотил эффект!");
                 } else if (this.getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
                     this.removeMarker();
-                    boolean pingPong = true;
+
                     // пока в взаимодействующих есть маркер отражения или преграды
                     while (pingPong) {
                         // если у кастера есть маркеры
@@ -279,15 +307,38 @@ public abstract class Target {
                             // если у кастера есть маркер отражения, то теряется маркер и перенаправляется на цель
                             if (player.getTarget().getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
                                 player.getTarget().removeMarker();
+                                System.out.println(player.getTarget() + " отразил заклинание!");
                                 // если у цели есть маркеры
                                 if (!this.getActiveMarkers().isEmpty()) {
                                     // если у цели есть маркер отражения, то теряется маркер и перенаправляется на кастера
                                     if (this.getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
                                         this.removeMarker();
+                                        System.out.println(this + " отразил заклинание!");
                                     }
                                     // если у цели есть маркер преграды, то теряется маркер и отражение поглощается
                                     else if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
                                         this.removeMarker();
+                                        System.out.println(this + " поглотил эффект!");
+                                        pingPong = false;
+                                    }
+                                    // если у цели есть маркер заморозки, то теряется маркер и урон проходит
+                                    else if (this.getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)){
+                                        damageReduction = -2;
+                                        this.removeMarker();
+                                        if (this.getHp() > 0) {
+                                            // если монстр ледяной
+                                            if (this.geteType().equals(ElementType.FROSTY)) {
+                                                totalDamage = (fireDamage + 2 + damageReduction + positionPower) <= 0 ? 1 : fireDamage + 2 + damageReduction + positionPower;
+                                            }
+                                            // если монстр огненный
+                                            else if (this.geteType().equals(ElementType.FIERY)) {
+                                                totalDamage = (fireDamage - 1 + damageReduction + positionPower) <= 0 ? 1 : fireDamage - 1 + damageReduction + positionPower;
+                                            } else {
+                                                totalDamage = (fireDamage + damageReduction + positionPower) <= 0 ? 1 : fireDamage + damageReduction + positionPower;
+                                            }
+                                            this.getDamage(totalDamage);
+                                            System.out.println("Огненный шар разморозил цель и " + this + " получил " + totalDamage + " урона огненным шаром!");
+                                        }
                                         pingPong = false;
                                     }
                                     // если у цели есть нет маркера преграды и отражения, то фаербол срабатывает
@@ -296,20 +347,16 @@ public abstract class Target {
                                             // если монстр ледяной
                                             if (this.geteType().equals(ElementType.FROSTY)) {
                                                 totalDamage = (fireDamage + 2 + damageReduction + positionPower) <= 0 ? 1 : fireDamage + 2 + damageReduction + positionPower;
-                                                this.getDamage(totalDamage);
-                                                System.out.println("Урон ледяному монстру");
-                                            }
+                                             }
                                             // если монстр огненный
                                             else if (this.geteType().equals(ElementType.FIERY)) {
                                                 totalDamage = (fireDamage - 1 + damageReduction + positionPower) <= 0 ? 1 : fireDamage - 1 + damageReduction + positionPower;
-                                                this.getDamage(totalDamage);
-                                                System.out.println("Урон огненному монстру");
-                                            } else {
+                                             } else {
                                                 totalDamage = (fireDamage + damageReduction + positionPower) <= 0 ? 1 : fireDamage + damageReduction + positionPower;
-                                                System.out.println("Урон цели");
-                                                System.out.println(totalDamage);
-                                                this.getDamage(totalDamage);
+                                                System.out.println(this + " получил " + totalDamage + " урона огненным шаром!");
                                             }
+                                            this.getDamage(totalDamage);
+                                            System.out.println(this + " получил " + totalDamage + " урона огненным шаром!");
                                         }
                                         pingPong = false;
                                     }
@@ -320,20 +367,15 @@ public abstract class Target {
                                         // если монстр ледяной
                                         if (this.geteType().equals(ElementType.FROSTY)) {
                                             totalDamage = (fireDamage + 2 + damageReduction + positionPower) <= 0 ? 1 : fireDamage + 2 + damageReduction + positionPower;
-                                            this.getDamage(totalDamage);
-                                            System.out.println("Урон ледяному монстру");
                                         }
                                         // если монстр огненный
                                         else if (this.geteType().equals(ElementType.FIERY)) {
                                             totalDamage = (fireDamage - 1 + damageReduction + positionPower) <= 0 ? 1 : fireDamage - 1 + damageReduction + positionPower;
-                                            this.getDamage(totalDamage);
-                                            System.out.println("Урон огненному монстру");
                                         } else {
                                             totalDamage = (fireDamage + damageReduction + positionPower) <= 0 ? 1 : fireDamage + damageReduction + positionPower;
-                                            System.out.println("Урон цели");
-                                            System.out.println(totalDamage);
-                                            this.getDamage(totalDamage);
                                         }
+                                        this.getDamage(totalDamage);
+                                        System.out.println(this + " получил " + totalDamage + " урона огненным шаром!");
                                     }
                                     pingPong = false;
                                 }
@@ -341,6 +383,28 @@ public abstract class Target {
                             // если у кастера есть маркер преграды, то теряется маркер и отражение поглощается
                             else if (player.getTarget().getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
                                 player.getTarget().removeMarker();
+                                System.out.println(player.getTarget() + " поглотил эффект!");
+                                pingPong = false;
+                            }
+                            // если у кастера есть заморозка, заморозка спадает и урон проходит
+                            else if (player.getTarget().getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)){
+                                damageReduction = -2;
+                                player.getTarget().removeMarker();
+                                if (player.getTarget().getHp() > 0) {
+                                    player.getTarget().removeMarker();
+                                    // если монстр ледяной
+                                    if (player.getTarget().geteType().equals(ElementType.FROSTY)) {
+                                        totalDamage = (fireDamage + 2 + damageReduction + positionPower) <= 0 ? 1 : fireDamage + 2 + damageReduction + positionPower;
+                                    }
+                                    // если монстр огненный
+                                    else if (player.getTarget().geteType().equals(ElementType.FIERY)) {
+                                        totalDamage = (fireDamage - 1 + damageReduction + positionPower) <= 0 ? 1 : fireDamage - 1 + damageReduction + positionPower;
+                                    } else {
+                                        totalDamage = (fireDamage + damageReduction + positionPower) <= 0 ? 1 : fireDamage + damageReduction + positionPower;
+                                     }
+                                    player.getTarget().getDamage(totalDamage);
+                                    System.out.println("Огненный шар разморозил цель и " + player.getTarget() + " получил " + totalDamage + " урона огненным шаром!");
+                                }
                                 pingPong = false;
                             }
                             // если у кастера нет маркера, то фаербол срабатывает
@@ -349,20 +413,15 @@ public abstract class Target {
                                     // если монстр ледяной
                                     if (player.getTarget().geteType().equals(ElementType.FROSTY)) {
                                         totalDamage = (fireDamage + 2 + damageReduction + positionPower) <= 0 ? 1 : fireDamage + 2 + damageReduction + positionPower;
-                                        player.getTarget().getDamage(totalDamage);
-                                        System.out.println("Урон ледяному монстру");
                                     }
                                     // если монстр огненный
                                     else if (player.getTarget().geteType().equals(ElementType.FIERY)) {
                                         totalDamage = (fireDamage - 1 + damageReduction + positionPower) <= 0 ? 1 : fireDamage - 1 + damageReduction + positionPower;
-                                        player.getTarget().getDamage(totalDamage);
-                                        System.out.println("Урон огненному монстру");
                                     } else {
                                         totalDamage = (fireDamage + damageReduction + positionPower) <= 0 ? 1 : fireDamage + damageReduction + positionPower;
-                                        System.out.println("Урон цели");
-                                        System.out.println(totalDamage);
-                                        player.getTarget().getDamage(totalDamage);
                                     }
+                                    player.getTarget().getDamage(totalDamage);
+                                    System.out.println(player.getTarget() + " получил " + totalDamage + " урона огненным шаром!");
                                 }
                                 pingPong = false;
                             }
@@ -372,20 +431,15 @@ public abstract class Target {
                                 // если монстр ледяной
                                 if (player.getTarget().geteType().equals(ElementType.FROSTY)) {
                                     totalDamage = (fireDamage + 2 + damageReduction + positionPower) <= 0 ? 1 : fireDamage + 2 + damageReduction + positionPower;
-                                    player.getTarget().getDamage(totalDamage);
-                                    System.out.println("Урон ледяному монстру");
                                 }
                                 // если монстр огненный
                                 else if (player.getTarget().geteType().equals(ElementType.FIERY)) {
                                     totalDamage = (fireDamage - 1 + damageReduction + positionPower) <= 0 ? 1 : fireDamage - 1 + damageReduction + positionPower;
-                                    player.getTarget().getDamage(totalDamage);
-                                    System.out.println("Урон огненному монстру");
                                 } else {
                                     totalDamage = (fireDamage + damageReduction + positionPower) <= 0 ? 1 : fireDamage + damageReduction + positionPower;
-                                    System.out.println("Урон цели");
-                                    System.out.println(totalDamage);
-                                    player.getTarget().getDamage(totalDamage);
-                                }
+                               }
+                                player.getTarget().getDamage(totalDamage);
+                                System.out.println(player.getTarget() + " получил " + totalDamage + " урона огненным шаром!");
                             }
                             pingPong = false;
                         }
@@ -397,25 +451,20 @@ public abstract class Target {
                 if (this.getHp() > 0) {
                     // если монстр ледяной
                     if (this.geteType().equals(ElementType.FROSTY)) {
-                        totalDamage = (fireDamage + 2 + damageReduction + positionPower) <= 0 ? 1 : fireDamage + 2 + damageReduction + positionPower;
-                        this.getDamage(totalDamage);
-                        System.out.println("Урон ледяному монстру");
+                        totalDamage = fireDamage + 2 + damageReduction + positionPower;
                     }
                     // если монстр огненный
                     else if (this.geteType().equals(ElementType.FIERY)) {
                         totalDamage = (fireDamage - 1 + damageReduction + positionPower) <= 0 ? 1 : fireDamage - 1 + damageReduction + positionPower;
-                        this.getDamage(totalDamage);
-                        System.out.println("Урон огненному монстру");
                     } else {
                         totalDamage = (fireDamage + damageReduction + positionPower) <= 0 ? 1 : fireDamage + damageReduction + positionPower;
-                        System.out.println("Урон цели");
-                        System.out.println(totalDamage);
-                        this.getDamage(totalDamage);
                     }
+                    this.getDamage(totalDamage);
+                    System.out.println(this + " получил " + totalDamage + " урона огненным шаром!");
                 }
             }
         }
-        // если заклиниие заморозка
+        // если заклиниие заморозка ----------------------------------------------------------------------------
         else if (spell.getClass().equals(Freeze.class)) {
             int frostDamage = 0;
             if (spellLevel == 1) frostDamage = 1;
@@ -425,13 +474,28 @@ public abstract class Target {
                 // если цель заморожена
                 if (this.getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
                     damageReduction = -2;
-                    this.removeMarker();
+                    if (this.getHp() > 0) {
+                        this.removeMarker();
+                        // если монстр ледяной
+                        if (this.geteType().equals(ElementType.FROSTY)) {
+                            totalDamage = (frostDamage - 1 + damageReduction + positionPower) <= 0 ? 1 : frostDamage - 1 + damageReduction + positionPower;
+                        }
+                        // если монстр огненный
+                        else if (this.geteType().equals(ElementType.FIERY)) {
+                            totalDamage = (frostDamage + 2 + damageReduction + positionPower) <= 0 ? 1 : frostDamage + 2 + damageReduction + positionPower;
+                       } else {
+                            totalDamage = (frostDamage + damageReduction + positionPower) <= 0 ? 1 : frostDamage + damageReduction + positionPower;
+                       }
+                        this.getDamage(totalDamage);
+                        System.out.println(this + " разморожен, получил " + totalDamage + " урона и снова заморожен!");
+                        this.addMarker(Marker.FREEZEMARKER);
+                    }
                 } else if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
                     this.removeMarker();
-                    System.out.println("Преграда поглотила урон!");
+                    System.out.println(this + " поглотил эффект!");
                 } else if (this.getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
                     this.removeMarker();
-                    boolean pingPong = true;
+                    System.out.println(this + " отразил заклинание!");
                     // пока в взаимодействующих есть маркер отражения или преграды
                     while (pingPong) {
                         // если у кастера есть маркеры
@@ -439,15 +503,39 @@ public abstract class Target {
                             // если у кастера есть маркер отражения, то теряется маркер и перенаправляется на цель
                             if (player.getTarget().getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
                                 player.getTarget().removeMarker();
+                                System.out.println(player.getTarget() + " отразил заклинание!");
                                 // если у цели есть маркеры
                                 if (!this.getActiveMarkers().isEmpty()) {
                                     // если у цели есть маркер отражения, то теряется маркер и перенаправляется на кастера
                                     if (this.getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
+                                        System.out.println(this + " отразил заклинание!");
                                         this.removeMarker();
                                     }
                                     // если у цели есть маркер преграды, то теряется маркер и отражение поглощается
                                     else if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
+                                        System.out.println(this + " поглотил эффект!");
                                         this.removeMarker();
+                                        pingPong = false;
+                                    }
+                                    // если у цели есть маркер заморозки, заморозка спадает и проходит урон и цель снова замороживается
+                                    else if (this.getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
+                                        damageReduction = -2;
+                                        if (this.getHp() > 0) {
+                                            this.removeMarker();
+                                            // если монстр ледяной
+                                            if (this.geteType().equals(ElementType.FROSTY)) {
+                                                totalDamage = (frostDamage - 1 + damageReduction + positionPower) <= 0 ? 1 : frostDamage - 1 + damageReduction + positionPower;
+                                            }
+                                            // если монстр огненный
+                                            else if (this.geteType().equals(ElementType.FIERY)) {
+                                                totalDamage = (frostDamage + 2 + damageReduction + positionPower) <= 0 ? 1 : frostDamage + 2 + damageReduction + positionPower;
+                                            } else {
+                                                totalDamage = (frostDamage + damageReduction + positionPower) <= 0 ? 1 : frostDamage + damageReduction + positionPower;
+                                            }
+                                            this.getDamage(totalDamage);
+                                            System.out.println(this + " разморожен, получил " + totalDamage + " урона и снова заморожен!");
+                                            this.addMarker(Marker.FREEZEMARKER);
+                                        }
                                         pingPong = false;
                                     }
                                     // если у цели есть нет маркера преграды и отражения, то заморозка срабатывает
@@ -455,20 +543,17 @@ public abstract class Target {
                                         if (this.getHp() > 0) {
                                             // если монстр ледяной
                                             if (this.geteType().equals(ElementType.FROSTY)) {
-                                                totalDamage = (frostDamage - 1 + damageReduction) <= 0 ? 1 : frostDamage - 1 + damageReduction;
-                                                this.getDamage(positionPower + totalDamage);
-                                                this.addMarker(Marker.FREEZEMARKER);
+                                                totalDamage = (frostDamage - 1 + damageReduction + positionPower) <= 0 ? 1 : frostDamage - 1 + damageReduction + positionPower;
                                             }
                                             // если монстр огненный
                                             else if (this.geteType().equals(ElementType.FIERY)) {
-                                                totalDamage = (frostDamage + 2 + damageReduction) <= 0 ? 1 : frostDamage + 2 + damageReduction;
-                                                this.getDamage(positionPower + totalDamage);
-                                                this.addMarker(Marker.FREEZEMARKER);
+                                                totalDamage = (frostDamage + 2 + damageReduction + positionPower) <= 0 ? 1 : frostDamage + 2 + damageReduction + positionPower;
                                             } else {
-                                                totalDamage = (frostDamage + damageReduction) <= 0 ? 1 : frostDamage + damageReduction;
-                                                this.getDamage(positionPower + totalDamage);
-                                                this.addMarker(Marker.FREEZEMARKER);
+                                                totalDamage = (frostDamage + damageReduction + positionPower) <= 0 ? 1 : frostDamage + damageReduction + positionPower;
                                             }
+                                            this.getDamage(totalDamage);
+                                            System.out.println(this + " получил " + totalDamage + " урона и заморожен!");
+                                            this.addMarker(Marker.FREEZEMARKER);
                                         }
                                         pingPong = false;
                                     }
@@ -478,20 +563,17 @@ public abstract class Target {
                                     if (this.getHp() > 0) {
                                         // если монстр ледяной
                                         if (this.geteType().equals(ElementType.FROSTY)) {
-                                            totalDamage = (frostDamage - 1 + damageReduction) <= 0 ? 1 : frostDamage - 1 + damageReduction;
-                                            this.getDamage(positionPower + totalDamage);
-                                            this.addMarker(Marker.FREEZEMARKER);
+                                            totalDamage = (frostDamage - 1 + damageReduction + positionPower) <= 0 ? 1 : frostDamage - 1 + damageReduction + positionPower;
                                         }
                                         // если монстр огненный
                                         else if (this.geteType().equals(ElementType.FIERY)) {
-                                            totalDamage = (frostDamage + 2 + damageReduction) <= 0 ? 1 : frostDamage + 2 + damageReduction;
-                                            this.getDamage(positionPower + totalDamage);
-                                            this.addMarker(Marker.FREEZEMARKER);
+                                            totalDamage = (frostDamage + 2 + damageReduction + positionPower) <= 0 ? 1 : frostDamage + 2 + damageReduction + positionPower;
                                         } else {
-                                            totalDamage = (frostDamage + damageReduction) <= 0 ? 1 : frostDamage + damageReduction;
-                                            this.getDamage(positionPower + totalDamage);
-                                            this.addMarker(Marker.FREEZEMARKER);
+                                            totalDamage = (frostDamage + damageReduction + positionPower) <= 0 ? 1 : frostDamage + damageReduction + positionPower;
                                         }
+                                        this.getDamage(totalDamage);
+                                        System.out.println(this + " получил " + totalDamage + " урона и заморожен!");
+                                        this.addMarker(Marker.FREEZEMARKER);
                                     }
                                     pingPong = false;
                                 }
@@ -499,6 +581,29 @@ public abstract class Target {
                             // если у кастера есть маркер преграды, то теряется маркер и отражение поглощается
                             else if (player.getTarget().getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
                                 player.getTarget().removeMarker();
+                                System.out.println(player.getTarget() + " поглотил эффект!");
+                                pingPong = false;
+                            }
+                            // если у цели есть маркер заморозки, заморозка спадает и проходит урон и цель снова замороживается
+                            else if (player.getTarget().getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
+                                damageReduction = -2;
+                                player.getTarget().removeMarker();
+                                if (player.getTarget().getHp() > 0) {
+                                    // если монстр ледяной
+                                    if (player.getTarget().geteType().equals(ElementType.FROSTY)) {
+                                        totalDamage = (frostDamage - 1 + damageReduction + positionPower) <= 0 ? 1 : frostDamage - 1 + damageReduction + positionPower;
+                                    }
+                                    // если монстр огненный
+                                    else if (player.getTarget().geteType().equals(ElementType.FIERY)) {
+                                        totalDamage = (frostDamage + 2 + damageReduction + positionPower) <= 0 ? 1 : frostDamage + 2 + damageReduction + positionPower;
+
+                                    } else {
+                                        totalDamage = (frostDamage + damageReduction + positionPower) <= 0 ? 1 : frostDamage + damageReduction + positionPower;
+                                    }
+                                    player.getTarget().getDamage(totalDamage);
+                                    System.out.println(player.getTarget() + " разморожен, получил " + totalDamage + " урона и снова заморожен!");
+                                    player.getTarget().addMarker(Marker.FREEZEMARKER);
+                                }
                                 pingPong = false;
                             }
                             // если у кастера нет маркера, то заморозка срабатывает
@@ -506,20 +611,17 @@ public abstract class Target {
                                 if (player.getTarget().getHp() > 0) {
                                     // если монстр ледяной
                                     if (player.getTarget().geteType().equals(ElementType.FROSTY)) {
-                                        totalDamage = (frostDamage - 1 + damageReduction) <= 0 ? 1 : frostDamage - 1 + damageReduction;
-                                        player.getTarget().getDamage(positionPower + totalDamage);
-                                        player.getTarget().addMarker(Marker.FREEZEMARKER);
+                                        totalDamage = (frostDamage - 1 + damageReduction + positionPower) <= 0 ? 1 : frostDamage - 1 + damageReduction + positionPower;
                                     }
                                     // если монстр огненный
                                     else if (player.getTarget().geteType().equals(ElementType.FIERY)) {
-                                        totalDamage = (frostDamage + 2 + damageReduction) <= 0 ? 1 : frostDamage + 2 + damageReduction;
-                                        player.getTarget().getDamage(positionPower + totalDamage);
-                                        player.getTarget().addMarker(Marker.FREEZEMARKER);
+                                        totalDamage = (frostDamage + 2 + damageReduction + positionPower) <= 0 ? 1 : frostDamage + 2 + damageReduction + positionPower;
                                     } else {
-                                        totalDamage = (frostDamage + damageReduction) <= 0 ? 1 : frostDamage + damageReduction;
-                                        player.getTarget().getDamage(positionPower + totalDamage);
-                                        player.getTarget().addMarker(Marker.FREEZEMARKER);
+                                        totalDamage = (frostDamage + damageReduction + positionPower) <= 0 ? 1 : frostDamage + damageReduction + positionPower;
                                     }
+                                    player.getTarget().getDamage(totalDamage);
+                                    player.getTarget().addMarker(Marker.FREEZEMARKER);
+                                    System.out.println(player.getTarget() + " получил " + totalDamage + " урона и заморожен!");
                                 }
                                 pingPong = false;
                             }
@@ -528,47 +630,43 @@ public abstract class Target {
                             if (player.getTarget().getHp() > 0) {
                                 // если монстр ледяной
                                 if (player.getTarget().geteType().equals(ElementType.FROSTY)) {
-                                    totalDamage = (frostDamage - 1 + damageReduction) <= 0 ? 1 : frostDamage - 1 + damageReduction;
-                                    player.getTarget().getDamage(positionPower + totalDamage);
-                                    player.getTarget().addMarker(Marker.FREEZEMARKER);
+                                    totalDamage = (frostDamage - 1 + damageReduction + positionPower) <= 0 ? 1 : frostDamage - 1 + damageReduction + positionPower;
                                 }
                                 // если монстр огненный
                                 else if (player.getTarget().geteType().equals(ElementType.FIERY)) {
-                                    totalDamage = (frostDamage + 2 + damageReduction) <= 0 ? 1 : frostDamage + 2 + damageReduction;
-                                    player.getTarget().getDamage(positionPower + totalDamage);
-                                    player.getTarget().addMarker(Marker.FREEZEMARKER);
+                                    totalDamage = (frostDamage + 2 + damageReduction + positionPower) <= 0 ? 1 : frostDamage + 2 + damageReduction + positionPower;
                                 } else {
-                                    totalDamage = (frostDamage + damageReduction) <= 0 ? 1 : frostDamage + damageReduction;
-                                    player.getTarget().getDamage(positionPower + totalDamage);
-                                    player.getTarget().addMarker(Marker.FREEZEMARKER);
+                                    totalDamage = (frostDamage + damageReduction + positionPower) <= 0 ? 1 : frostDamage + damageReduction + positionPower;
                                 }
+                                player.getTarget().getDamage(totalDamage);
+                                player.getTarget().addMarker(Marker.FREEZEMARKER);
+                                System.out.println(player.getTarget() + " получил " + totalDamage + " урона и заморожен!");
                             }
                             pingPong = false;
                         }
                     }
                 }
-            } else {
+            }
+            // если у цели не маркеров, то заморозка срабатывает
+            else {
+                this.addMarker(Marker.FREEZEMARKER);
                 if (this.getHp() > 0) {
                     // если монстр ледяной
                     if (this.geteType().equals(ElementType.FROSTY)) {
-                        totalDamage = (frostDamage - 1 + damageReduction) <= 0 ? 1 : frostDamage - 1 + damageReduction;
-                        this.getDamage(positionPower + totalDamage);
-                        this.addMarker(Marker.FREEZEMARKER);
+                        totalDamage = (frostDamage - 1 + positionPower) <= 0 ? 1 : frostDamage - 1 + positionPower;
                     }
                     // если монстр огненный
                     else if (this.geteType().equals(ElementType.FIERY)) {
-                        totalDamage = (frostDamage + 2 + damageReduction) <= 0 ? 1 : frostDamage + 2 + damageReduction;
-                        this.getDamage(positionPower + totalDamage);
-                        this.addMarker(Marker.FREEZEMARKER);
+                        totalDamage = frostDamage + 2 + positionPower;
                     } else {
-                        totalDamage = (frostDamage + damageReduction) <= 0 ? 1 : frostDamage + damageReduction;
-                        this.getDamage(positionPower + totalDamage);
-                        this.addMarker(Marker.FREEZEMARKER);
+                        totalDamage = (frostDamage + positionPower) <= 0 ? 1 : frostDamage + positionPower;
                     }
+                    this.getDamage(totalDamage);
+                    System.out.println(this + " получил " + totalDamage + " урона и заморожен!");
                 }
             }
         }
-        // если заклинание свет
+        // если заклинание свет ----------------------------------------------------------------------------
         else if (spell.getClass().equals(Light.class)) {
             int healPoints = 0;
             if (spellLevel == 1) healPoints = 2;
@@ -578,12 +676,24 @@ public abstract class Target {
                 // если цель заморожена
                 if (this.getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
                     damageReduction = -2;
+                    if (this.getHp() > 0) {
+                        if (this.getmType().equals(MonsterTypes.UNDEAD)) {
+                            totalDamage = (healPoints + damageReduction + positionPower) <= 0 ? 1 : healPoints + damageReduction + positionPower;
+                            this.getDamage(totalDamage);
+                            this.removeMarker();
+                            System.out.println(this + "разморожен и получил " + totalDamage + " урона Светом!");
+                        } else {
+                            this.heal(healPoints);
+                            if (this.hp > this.maxHp) hp = maxHp;
+                            System.out.println(this + " восстановил здоровье на " + healPoints);
+                        }
+                    }
                 } else if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
                     this.removeMarker();
-                    System.out.println("Преграда поглотила урон!");
+                    System.out.println("Преграда поглотила эффект!");
                 } else if (this.getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
                     this.removeMarker();
-                    boolean pingPong = true;
+                    System.out.println(this + " отразил заклинание!");
                     // пока в взаимодействующих есть маркер отражения или преграды
                     while (pingPong) {
                         // если у кастера есть маркеры
@@ -591,15 +701,34 @@ public abstract class Target {
                             // если у кастера есть маркер отражения, то теряется маркер и перенаправляется на цель
                             if (player.getTarget().getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
                                 player.getTarget().removeMarker();
+                                System.out.println(player.getTarget() + " отразил заклинание!");
                                 // если у цели есть маркеры
                                 if (!this.getActiveMarkers().isEmpty()) {
                                     // если у цели есть маркер отражения, то теряется маркер и перенаправляется на кастера
                                     if (this.getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
                                         this.removeMarker();
+                                        System.out.println(this + " отразил заклинание!");
                                     }
                                     // если у цели есть маркер преграды, то теряется маркер и отражение поглощается
                                     else if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
                                         this.removeMarker();
+                                        System.out.println(this + " поглотил эффект!");
+                                        pingPong = false;
+                                    }
+                                    else if (this.getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
+                                        damageReduction = -2;
+                                        if (this.getHp() > 0) {
+                                            if (this.getmType().equals(MonsterTypes.UNDEAD)) {
+                                                totalDamage = (healPoints + damageReduction + positionPower) <= 0 ? 1 : healPoints + damageReduction + positionPower;
+                                                this.getDamage(totalDamage);
+                                                this.removeMarker();
+                                                System.out.println(this + "разморожен и получил " + totalDamage + " урона Светом!");
+                                            } else {
+                                                this.heal(healPoints);
+                                                if (this.hp > this.maxHp) hp = maxHp;
+                                                System.out.println(this + " восстановил здоровье на " + healPoints);
+                                            }
+                                        }
                                         pingPong = false;
                                     }
                                     // если у цели есть нет маркера преграды и отражения, то свет срабатывает
@@ -608,11 +737,11 @@ public abstract class Target {
                                             if (this.getmType().equals(MonsterTypes.UNDEAD)) {
                                                 totalDamage = (healPoints + damageReduction + positionPower) <= 0 ? 1 : healPoints + damageReduction + positionPower;
                                                 this.getDamage(totalDamage);
-                                                System.out.println("Нежить получила урон!");
+                                                System.out.println(this + " получил " + totalDamage + " урона Светом!");
                                             } else {
                                                 this.heal(healPoints);
                                                 if (this.hp > this.maxHp) hp = maxHp;
-                                                System.out.println("у " + this + " здоровье восстановлено");
+                                                System.out.println(this + " восстановил здоровье на " + healPoints);
                                             }
                                         }
                                         pingPong = false;
@@ -624,11 +753,11 @@ public abstract class Target {
                                         if (this.getmType().equals(MonsterTypes.UNDEAD)) {
                                             totalDamage = (healPoints + damageReduction + positionPower) <= 0 ? 1 : healPoints + damageReduction + positionPower;
                                             this.getDamage(totalDamage);
-                                            System.out.println("Нежить получила урон!");
+                                            System.out.println(this + " получил " + totalDamage + " урона Светом!");
                                         } else {
                                             this.heal(healPoints);
                                             if (this.hp > this.maxHp) hp = maxHp;
-                                            System.out.println("у " + this + " здоровье восстановлено");
+                                            System.out.println(this + " восстановил здоровье на " + healPoints);
                                         }
                                     }
                                     pingPong = false;
@@ -637,6 +766,23 @@ public abstract class Target {
                             // если у кастера есть маркер преграды, то теряется маркер и отражение поглощается
                             else if (player.getTarget().getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
                                 player.getTarget().removeMarker();
+                                System.out.println(player.getTarget() + " поглотил эффект!");
+                                pingPong = false;
+                            }
+                            else if (player.getTarget().getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
+                                damageReduction = -2;
+                                if (player.getTarget().getHp() > 0) {
+                                    if (player.getTarget().getmType().equals(MonsterTypes.UNDEAD)) {
+                                        totalDamage = (healPoints + damageReduction + positionPower) <= 0 ? 1 : healPoints + damageReduction + positionPower;
+                                        player.getTarget().getDamage(totalDamage);
+                                        player.getTarget().removeMarker();
+                                        System.out.println(player.getTarget() + "разморожен и получил " + totalDamage + " урона Светом!");
+                                    } else {
+                                        player.getTarget().heal(healPoints);
+                                        if (player.getTarget().hp > player.getTarget().maxHp) hp = maxHp;
+                                        System.out.println(player.getTarget() + " восстановил здоровье на " + healPoints);
+                                    }
+                                }
                                 pingPong = false;
                             }
                             // если у кастера нет маркера, то свет срабатывает
@@ -645,11 +791,11 @@ public abstract class Target {
                                     if (player.getTarget().getmType().equals(MonsterTypes.UNDEAD)) {
                                         totalDamage = (healPoints + damageReduction + positionPower) <= 0 ? 1 : healPoints + damageReduction + positionPower;
                                         player.getTarget().getDamage(totalDamage);
-                                        System.out.println("Нежить получила урон!");
+                                        System.out.println(player.getTarget() + " получил " + totalDamage + " урона Светом!");
                                     } else {
                                         player.getTarget().heal(healPoints);
                                         if (player.getTarget().hp > player.getTarget().maxHp) hp = maxHp;
-                                        System.out.println("у " + player.getTarget() + " здоровье восстановлено");
+                                        System.out.println(player.getTarget() + " восстановил здоровье на " + healPoints);
                                     }
                                 }
                                 pingPong = false;
@@ -660,11 +806,11 @@ public abstract class Target {
                                 if (player.getTarget().getmType().equals(MonsterTypes.UNDEAD)) {
                                     totalDamage = (healPoints + damageReduction + positionPower) <= 0 ? 1 : healPoints + damageReduction + positionPower;
                                     player.getTarget().getDamage(totalDamage);
-                                    System.out.println("Нежить получила урон!");
+                                    System.out.println(player.getTarget() + " получил " + totalDamage + " урона Светом!");
                                 } else {
                                     player.getTarget().heal(healPoints);
                                     if (player.getTarget().hp > player.getTarget().maxHp) hp = maxHp;
-                                    System.out.println("у " + player.getTarget() + " здоровье восстановлено");
+                                    System.out.println(player.getTarget() + " восстановил здоровье на " + healPoints);
                                 }
                             }
                             pingPong = false;
@@ -676,34 +822,158 @@ public abstract class Target {
                     if (this.getmType().equals(MonsterTypes.UNDEAD)) {
                         totalDamage = (healPoints + damageReduction + positionPower) <= 0 ? 1 : healPoints + damageReduction + positionPower;
                         this.getDamage(totalDamage);
-                        System.out.println("Нежить получила урон!");
+                        System.out.println(this + " получил " + totalDamage + " урона Светом!");
                     } else {
                         this.heal(healPoints);
                         if (this.hp > this.maxHp) hp = maxHp;
-                        System.out.println("у " + this + " здоровье восстановлено");
+                        System.out.println(this + " восстановил здоровье на " + healPoints);
                     }
                 }
             }
-            // если заклинание молния
+            // если заклинание молния ----------------------------------------------------------------------------
         } else if (spell.getClass().equals(LightningBolt.class)) {
-            System.out.println("Молния!!!");
+            int lightingPower = 0;
+            if (spellLevel == 1) lightingPower = 1;
+            if (spellLevel == 2) lightingPower = 2;
+            lightings++;
+            if (!this.getActiveMarkers().isEmpty()) {
+                // если цель заморожена
+                if (this.getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
+                    damageReduction = -2;
+                    if (this.getHp() > 0) {
+                        totalDamage = (lightings + lightingPower + damageReduction + positionPower) <= 0 ? 1 : lightings + lightingPower + damageReduction + positionPower;
+                        this.getDamage(totalDamage);
+                        this.removeMarker();
+                        System.out.println(this + "разморожена получил урон от молнии в размере " + totalDamage);
+                    }
+                } else if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
+                    this.removeMarker();
+                    System.out.println(this + " поглотил эффект!");
+                } else if (this.getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
+                    this.removeMarker();
+                    System.out.println(this + " отразил заклинание!");
+                    // пока в взаимодействующих есть маркер отражения или преграды
+                    while (pingPong) {
+                        // если у кастера есть маркеры
+                        if (!player.getTarget().getActiveMarkers().isEmpty()) {
+                            // если у кастера есть маркер отражения, то теряется маркер и перенаправляется на цель
+                            if (player.getTarget().getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
+                                System.out.println(player.getTarget() + " отразил заклинание!");
+                                player.getTarget().removeMarker();
+                                // если у цели есть маркеры
+                                if (!this.getActiveMarkers().isEmpty()) {
+                                    // если у цели есть маркер отражения, то теряется маркер и перенаправляется на кастера
+                                    if (this.getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
+                                        System.out.println(this + " отразил заклинание!");
+                                        this.removeMarker();
+                                    }
+                                    // если у цели есть маркер преграды, то теряется маркер и отражение поглощается
+                                    else if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
+                                        System.out.println(this + " поглотил эффект!");
+                                        this.removeMarker();
+                                        pingPong = false;
+                                    }
+                                    else if (this.getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
+                                        damageReduction = -2;
+                                        if (this.getHp() > 0) {
+                                            totalDamage = (lightings + lightingPower + damageReduction + positionPower) <= 0 ? 1 : lightings + lightingPower + damageReduction + positionPower;
+                                            this.getDamage(totalDamage);
+                                            this.removeMarker();
+                                            System.out.println(this + "разморожена получил урон от молнии в размере " + totalDamage);
+                                        }
+                                        pingPong = false;
+                                    }
+                                    // если у цели есть нет маркера преграды и отражения, то свет срабатывает
+                                    else {
+                                        if (this.getHp() > 0) {
+                                            totalDamage = (lightings + lightingPower + damageReduction + positionPower) <= 0 ? 1 : lightings + lightingPower + damageReduction + positionPower;
+                                            this.getDamage(totalDamage);
+                                            System.out.println(this + " получил урон от молнии в размере " + totalDamage);
+                                        }
+                                        pingPong = false;
+                                    }
+                                }
+                                // если у цели есть нет маркеров, то свет срабатывает
+                                else {
+                                    if (this.getHp() > 0) {
+                                        totalDamage = (lightings + lightingPower + damageReduction + positionPower) <= 0 ? 1 : lightings + lightingPower + damageReduction + positionPower;
+                                        this.getDamage(totalDamage);
+                                        System.out.println(this + " получил урон от молнии в размере " + totalDamage);
+                                    }
+                                    pingPong = false;
+                                }
+                            }
+                            // если у кастера есть маркер преграды, то теряется маркер и отражение поглощается
+                            else if (player.getTarget().getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
+                                player.getTarget().removeMarker();
+                                System.out.println(player.getTarget() + " поглотил эффект!");
+                                pingPong = false;
+                            }
+                            else if (player.getTarget().getActiveMarkers().getLast().equals(Marker.FREEZEMARKER)) {
+                                damageReduction = -2;
+                                if (player.getTarget().getHp() > 0) {
+                                    totalDamage = (lightings + lightingPower + damageReduction + positionPower) <= 0 ? 1 : lightings + lightingPower + damageReduction + positionPower;
+                                    player.getTarget().getDamage(totalDamage);
+                                    player.getTarget().removeMarker();
+                                    System.out.println(player.getTarget() + "разморожена получил урон от молнии в размере " + totalDamage);
+                                }
+                                pingPong = false;
+                            }
+                            // если у кастера нет маркера, то свет срабатывает
+                            else {
+                                if (player.getTarget().getHp() > 0) {
+                                    totalDamage = (lightings + lightingPower + damageReduction + positionPower) <= 0 ? 1 : lightings + lightingPower + damageReduction + positionPower;
+                                    player.getTarget().getDamage(totalDamage);
+                                    System.out.println(player.getTarget() + " получил урон от молнии в размере " + totalDamage);
+                                }
+                                pingPong = false;
+                            }
+                            // если у кастера нет маркеров, то свет срабатывает
+                        } else {
+                            if (player.getTarget().getHp() > 0) {
+                                totalDamage = (lightings + lightingPower + damageReduction + positionPower) <= 0 ? 1 : lightings + lightingPower + damageReduction + positionPower;
+                                player.getTarget().getDamage(totalDamage);
+                                System.out.println(player.getTarget() + " получил урон от молнии в размере " + totalDamage);
+                            }
+                            pingPong = false;
+                        }
+                    }
+                }
+            } else {
+                if (this.getHp() > 0) {
+                    totalDamage = (lightings + lightingPower + damageReduction + positionPower) <= 0 ? 1 : lightings + lightingPower + damageReduction + positionPower;
+                    this.getDamage(totalDamage);
+                    System.out.println(this + " получил урон от молнии в размере " + totalDamage);
+                }
+            }
         }
-        // если заклинание отражение
+        // если заклинание отражение ----------------------------------------------------------------------------
         else if (spell.getClass().equals(Reflection.class)) {
             // если игрок кастует на себя
             if (this.equals(player.getTarget())) {
-                this.addMarker(Marker.REFLECTIONMARKER);
+                if (this.activeMarkers.size() <= 3) {
+                    if (spellLevel == 1) {
+                        this.addMarker(Marker.REFLECTIONMARKER);
+                        System.out.println(this + " наложил на себя маркер отражения!");
+                    }
+                    if (spellLevel == 2) {
+                        this.addMarker(Marker.REFLECTIONMARKER);
+                        this.addMarker(Marker.REFLECTIONMARKER);
+                        System.out.println(this + " наложил на себя 2 маркера отражения!");
+                    }
+                }
             }
             // если игрок кастует на другую цели и у нее есть маркеры
             else if (!this.getActiveMarkers().isEmpty()) {
                 // если у цели маркер преграды, то отражение не проходит и маркер преграды сбрасывается
                 if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
+                    System.out.println(this + " поглотил эффект!");
                     this.removeMarker();
                 }
                 // если у цели есть маркер отражения
                 else if (this.getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
                     this.removeMarker();
-                    boolean pingPong = true;
+                    System.out.println(this + " отразил заклинание!");
                     // пока в взаимодействующих есть маркер отражения или преграды
                     while (pingPong) {
                         // если у кастера есть маркеры
@@ -711,15 +981,18 @@ public abstract class Target {
                             // если у кастера есть маркер отражения, то теряется маркер и перенаправляется на цель
                             if (player.getTarget().getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
                                 player.getTarget().removeMarker();
+                                System.out.println(player.getTarget() + " отразил заклинание!");
                                 // если у цели есть маркеры
                                 if (!this.getActiveMarkers().isEmpty()) {
                                     // если у цели есть маркер отражения, то теряется маркер и перенаправляется на кастера
                                     if (this.getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
                                         this.removeMarker();
+                                        System.out.println(this + " отразил заклинание!");
                                     }
                                     // если у цели есть маркер преграды, то теряется маркер и отражение поглощается
                                     else if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
                                         this.removeMarker();
+                                        System.out.println(this + " поглотил эффект!");
                                         pingPong = false;
                                     }
                                     // если у цели есть нет маркера преграды и отражения, то цель получает маркер отражения
@@ -753,6 +1026,7 @@ public abstract class Target {
                             // если у кастера есть маркер преграды, то теряется маркер и отражение поглощается
                             else if (player.getTarget().getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
                                 player.getTarget().removeMarker();
+                                System.out.println(player.getTarget() + " поглотил эффект!");
                                 pingPong = false;
                             }
                             // если у кастера нет маркера отражения или преграды, то кастер получает маркер преграды
@@ -795,15 +1069,28 @@ public abstract class Target {
                     System.out.println(this + " получил 2 маркера отражения!");
                 }
             }
-            // если заклинание преграда
+            // если заклинание преграда ----------------------------------------------------------------------------
         } else if (spell.getClass().equals(Wall.class)) {
-            if (!this.getActiveMarkers().isEmpty()) {
+            // если игрок кастует на себя
+            if (this.equals(player.getTarget())) {
+                if (this.activeMarkers.size() <= 3) {
+                    if (spellLevel == 1) {
+                        this.addMarker(Marker.WALLMARKER);
+                        System.out.println(this + " наложил маркер преграды на себя!");
+                    }
+                    if (spellLevel == 2) {
+                        System.out.println(this + " наложил 2 маркера преграды на себя!");
+                        this.addMarker(Marker.WALLMARKER);
+                        this.addMarker(Marker.WALLMARKER);
+                    }
+                }
+            } else if (!this.getActiveMarkers().isEmpty()) {
                 if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
-                    System.out.println("Преграда поглотила урон");
+                    System.out.println(this + " поглотил эффект!");
                     this.removeMarker();
                 } else if (this.getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
                     this.removeMarker();
-                    boolean pingPong = true;
+                    System.out.println(this + " отразил заклинание!");
                     // пока в взаимодействующих есть маркер отражения или преграды
                     while (pingPong) {
                         // если у кастера есть маркеры
@@ -811,15 +1098,18 @@ public abstract class Target {
                             // если у кастера есть маркер отражения, то теряется маркер и перенаправляется на цель
                             if (player.getTarget().getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
                                 player.getTarget().removeMarker();
+                                System.out.println(player.getTarget() + " отразил заклинание!");
                                 // если у цели есть маркеры
                                 if (!this.getActiveMarkers().isEmpty()) {
                                     // если у цели есть маркер отражения, то теряется маркер и перенаправляется на кастера
                                     if (this.getActiveMarkers().getLast().equals(Marker.REFLECTIONMARKER)) {
                                         this.removeMarker();
+                                        System.out.println(this + " отразил заклинание!");
                                     }
                                     // если у цели есть маркер преграды, то теряется маркер и отражение поглощается
                                     else if (this.getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
                                         this.removeMarker();
+                                        System.out.println(this + " поглотил эффект!");
                                         pingPong = false;
                                     }
                                     // если у цели есть нет маркера преграды и отражения, то цель получает маркер преграды
@@ -853,6 +1143,7 @@ public abstract class Target {
                             // если у кастера есть маркер преграды, то теряется маркер и отражение поглощается
                             else if (player.getTarget().getActiveMarkers().getLast().equals(Marker.WALLMARKER)) {
                                 player.getTarget().removeMarker();
+                                System.out.println(player.getTarget() + " поглотил эффект!");
                                 pingPong = false;
                             }
                             // если у кастера нет маркера, он получает маркер преграды
@@ -885,9 +1176,12 @@ public abstract class Target {
                     }
                 }
             } else {
-                if (spellLevel == 1) this.addMarker(Marker.WALLMARKER);
+                if (spellLevel == 1) {
+                    this.addMarker(Marker.WALLMARKER);
+                    System.out.println(this + " получает маркер преграды!");
+                }
                 if (spellLevel == 2) {
-                    System.out.println("Преграда 2 уровня!");
+                    System.out.println(this + " получает 2 маркера преграды!");
                     this.addMarker(Marker.WALLMARKER);
                     this.addMarker(Marker.WALLMARKER);
                 }

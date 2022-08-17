@@ -406,9 +406,14 @@ public class Game {
                 if (player.drawDecision("s")) player.drawSpell(field, player);
             }
         }
+        Target.setLightings();
 
         for (Target target : field) {
             System.out.println(target + " " + target.getHp());
+        }
+
+        for (Target target : field) {
+            System.out.println(target + " " + target.getActiveMarkers());
         }
 
         // Атака монстра с рывком если жив или не заморожен
@@ -453,6 +458,7 @@ public class Game {
                 }
             }
         }
+        Target.setLightings();
 
         for (Target target : field) {
             System.out.println(target + " " + target.getHp());

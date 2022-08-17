@@ -120,7 +120,9 @@ public class Player {
             Collections.swap(field, field.indexOf(field.get(field.indexOf(getTarget()))), field.indexOf(field.get(to)));
             System.out.println("Фаза перемещения: " + field);
         }
-        getTarget().setLinePosition(field.indexOf(getTarget()));
+        for (int i = 1; i < field.size(); i++) {
+            field.get(i).setLinePosition(field.indexOf(getTarget()));
+        }
     }
 
     /**
