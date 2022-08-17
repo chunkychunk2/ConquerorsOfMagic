@@ -5,4 +5,5 @@ public class FireBall extends Spell {
     public String toString() {
         return "Огненный шар";
     }
+
 }

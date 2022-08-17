@@ -3,6 +3,7 @@ package game.play;
 import game.spells.*;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Hand {
@@ -15,18 +16,25 @@ public class Hand {
     /**
      * Список сброса заклинаний игрока
      */
-    private List<Spell> discard = new ArrayList<>();
+    private LinkedList<Spell> discard = new LinkedList<>();
 
     /**
      * Конструктор создает стартовую руку заклинаний
      */
-     Hand() {
+    public Hand() {
         spells.add(new Reflection());
         spells.add(new Wall());
         spells.add(new LightningBolt());
         spells.add(new Light());
         spells.add(new Freeze());
         spells.add(new FireBall());
+    }
+
+    public void restoreDiscard(){
+        while (!discard.isEmpty()){
+            spells.add(discard.getFirst());
+            discard.removeFirst();
+        }
     }
 
     /**

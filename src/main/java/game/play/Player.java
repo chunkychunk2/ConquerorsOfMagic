@@ -12,6 +12,28 @@ public class Player {
 
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
+    private int xp;
+
+    private boolean help = false;
+
+    public void setHelp(boolean b) {
+        this.help = b;
+    }
+
+    public boolean isHelp() {
+        return help;
+    }
+
+    public void setXp(int xp) {
+        this.xp += xp;
+    }
+
+    public int getXp() {
+        return xp;
+    }
+
+    private int lvl;
+
     /**
      * Рука игрока
      */
@@ -29,10 +51,6 @@ public class Player {
 
     private List<Integer> selectedTargets;
 
-    public List<Integer> getSelectedTargets() {
-        return selectedTargets;
-    }
-
     /**
      * Имя персонажа игрока
      */
@@ -48,6 +66,17 @@ public class Player {
         this.hand = new Hand();
         this.name = tagret.getName();
         selectedTargets = new ArrayList<>();
+        this.xp = 0;
+        this.lvl = 0;
+    }
+
+    // если игрок помог убить монстра и монстр умер, то игрок получит 2 опыта
+    public void checkHelp(List<Target> field) {
+        if (help && field.get(0).isDead()) xp += 2;
+    }
+
+    public List<Integer> getSelectedTargets() {
+        return selectedTargets;
     }
 
     /**
@@ -108,20 +137,28 @@ public class Player {
      * @throws IOException
      * @see Game#field - игровое поле
      */
-    public void moveDecision(List<Target> field) throws IOException {
+    public void moveDecision(List<Target> field, String choice) throws IOException {
         System.out.println(this + " решает переместиться или нет");
         System.out.println("Переместиться? [Да]/[Нет]");
         System.out.println(field);
-        if (reader.readLine().equals("Да")) {
-            for (int i = 1; i < field.size(); i++) {
-                if (!field.get(i).equals(getTarget())) System.out.println("[" + i + "]:" + field.get(i));
+        if (choice.equals("s")) {
+            if (reader.readLine().equals("Да")) {
+                for (int i = 1; i < field.size(); i++) {
+                    if (!field.get(i).equals(getTarget())) System.out.println("[" + i + "]:" + field.get(i));
+                }
+                int to = Integer.parseInt(reader.readLine());
+                Collections.swap(field, field.indexOf(field.get(field.indexOf(getTarget()))), field.indexOf(field.get(to)));
+                System.out.println("Фаза перемещения: " + field);
             }
-            int to = Integer.parseInt(reader.readLine());
-            Collections.swap(field, field.indexOf(field.get(field.indexOf(getTarget()))), field.indexOf(field.get(to)));
-            System.out.println("Фаза перемещения: " + field);
-        }
-        for (int i = 1; i < field.size(); i++) {
-            field.get(i).setLinePosition(field.indexOf(getTarget()));
+        } else {
+            if (choice.equals("Да")) {
+                int to = 1;
+                for (int i = 1; i < field.size(); i++) {
+                    if (!field.get(i).equals(getTarget())) to = i;
+                }
+                Collections.swap(field, field.indexOf(field.get(field.indexOf(getTarget()))), field.indexOf(field.get(to)));
+                System.out.println("Фаза перемещения: " + field);
+            }
         }
     }
 
@@ -179,7 +216,7 @@ public class Player {
         if (field.get(selectedTarget).getActiveCards().containsKey(this)) {
             // if (i == 2 && !field.get(selectedTarget).getActiveCards().get(this).get(0).isEmpty()) {
             if (i == 2 && field.get(selectedTarget).getActiveCards().get(this).get(0).size() == 1) {
-                System.out.println("Разместить заклинание поверх своей ранее неразыгранной карты или в другое место? [Да]/[Нет]");
+                System.out.println("Разместить заклинание поверх своей ранее неразыгранной карты? [Да]/[Нет]");
                 String cardLocationChoice = choice;
                 if (choice.equals("s")) cardLocationChoice = reader.readLine();
                 if (cardLocationChoice.equals("Нет")) newCardPlace = true;
@@ -213,7 +250,7 @@ public class Player {
      * @param field - игровое поле
      * @throws IOException
      */
-    public void drawSpell(List<Target> field, Player player) throws IOException {
+    public void drawSpell(List<Target> field, Player player, int choice) throws IOException {
         int spellLevel = 0;
         int decision = this.getSelectedTarget();
         int spellNumber = 0;
@@ -229,7 +266,8 @@ public class Player {
             if (!selectedTargets.get(0).equals(selectedTargets.get(1))) {
                 System.out.println("Какое заклинание разыграть?");
                 System.out.println("Заклинание напротив [1] " + field.get(selectedTargets.get(0)) + " или напротив [2] " + field.get(selectedTargets.get(1)));
-                decision = Integer.parseInt(reader.readLine());
+                if (choice == -1) decision = Integer.parseInt(reader.readLine());
+                else  decision = choice;
             }
             if (decision == 2) decision = field.indexOf(field.get(selectedTargets.get(1)));
             else decision = field.indexOf(field.get(selectedTargets.get(0)));
@@ -238,10 +276,11 @@ public class Player {
         // если заклинания находится на одной цели
         if (field.get(decision).getActiveCards().containsKey(this)) {
             if (field.get(decision).getActiveCards().get(this).size() == 2) {
-                System.out.println("Какое заклинание разыграть??");
+                System.out.println("Какое заклинание разыграть?");
                 System.out.println("[1] " + field.get(decision).getActiveCards().get(this).get(0).getLast() +
                         " или [2] " + field.get(decision).getActiveCards().get(this).get(1).getLast());
-                spellNumber = Integer.parseInt(reader.readLine());
+                if (choice == -1) spellNumber = Integer.parseInt(reader.readLine());
+                else spellNumber = choice;
                 spellNumber--;
             }
         }
@@ -253,9 +292,9 @@ public class Player {
             if (field.get(selectedTarget).getActiveCards().get(this).get(0).size() == 1) spellLevel = 1;
             if (field.get(selectedTarget).getActiveCards().get(this).get(0).size() == 2) spellLevel = 2;
             if (entry.getValue().equals(false))
-                this.getTarget().getSpellEffect(entry.getKey(), this.getTarget().getLinePosition(), field, spellLevel, player);
+                this.getTarget().getSpellEffect(entry.getKey(), field.indexOf(this.getTarget()), field, spellLevel, player);
             else
-                field.get(decision).getSpellEffect(entry.getKey(), this.getTarget().getLinePosition(), field, spellLevel, player);
+                field.get(decision).getSpellEffect(entry.getKey(), field.indexOf(this.getTarget()), field, spellLevel, player);
         }
         int index = 0;
         for (int i = 0; i < this.selectedTargets.size(); i++) {

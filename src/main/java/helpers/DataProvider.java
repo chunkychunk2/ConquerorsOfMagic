@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.Arguments;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -30,19 +31,26 @@ public class DataProvider {
 
         List<Target> monsters = Database.getMonsters();
 
+        List<Player> twoPlayers = new ArrayList<>(Arrays.asList(new Player(new FrostMage()), new Player(new Pyromancer())));
+        List<String> twoPlayersMoveDecision = new ArrayList<>(Arrays.asList("Нет", "Да"));
+        List<Integer> twoPlayersFirstSpellSelections = new ArrayList<>(Arrays.asList(0,4,1,2));
+        List<Integer> twoPlayersFirstTargetSelections = new ArrayList<>(Arrays.asList(1,1,0,0));
+        List<String> twoPlayersFirstDirectionSelections = new ArrayList<>(Arrays.asList("На себя", "На цель", "На цель", "На цель"));
+        List<String> twoPlayersFirstSpellCastingDecision = new ArrayList<>(Arrays.asList("Да", "Да", "Нет", "Нет"));
+
+        List<Integer> twoPlayersSecondSpellSelections = new ArrayList<>(Arrays.asList(1,4,1,1));
+        List<Integer> twoPlayersSecondTargetSelections = new ArrayList<>(Arrays.asList(1,0,1,0));
+        List<String> twoPlayersSecondDirectionSelections = new ArrayList<>(Arrays.asList("На себя", "На цель", "На себя", "На цель"));
+        List<String> twoPlayersSecondSpellCastingDecision = new ArrayList<>(Arrays.asList("Да", "Да"));
+        List<Integer> twoPlayersSpellChoice = new ArrayList<>(Arrays.asList(1,2,1,2));
+
 
         return Stream.of(
-                Arguments.of(monsters.get(6),new Player(new FrostMage()), new Player(new Pyromancer()),monsters.get(6).getName()),
-                Arguments.of(monsters.get(2),new Player(new FrostMage()), new Player(new Pyromancer()), monsters.get(2).getName())
-//                Arguments.of(monsters.get(1)),
-//                Arguments.of(monsters.get(2)),
-//                Arguments.of(monsters.get(3)),
-//                Arguments.of(monsters.get(4)),
-//                Arguments.of(monsters.get(5)),
-//                Arguments.of(monsters.get(6)),
-//                Arguments.of(monsters.get(7)),
-//                Arguments.of(monsters.get(8)),
-//                Arguments.of(monsters.get(9))
-              );
+                Arguments.of(monsters, twoPlayers, twoPlayersMoveDecision,
+                        twoPlayersFirstSpellSelections, twoPlayersFirstTargetSelections,
+                        twoPlayersFirstDirectionSelections,twoPlayersFirstSpellCastingDecision,
+                        twoPlayersSecondSpellSelections,twoPlayersSecondTargetSelections,twoPlayersSecondDirectionSelections,
+                        twoPlayersSecondSpellCastingDecision,twoPlayersSpellChoice)
+        );
     }
 }
